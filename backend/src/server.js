@@ -3,6 +3,8 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import connectDB from './db/index.js'
 import router from './routes/index.js'
+import cookieParser from "cookie-parser"
+
 
 dotenv.config({
     path:'./.env'
@@ -16,7 +18,7 @@ app.use(cors({
     origin: process.env.FRONTEND_URL,
     credentials: true
 }))
-//app.use(cookieParser());
+app.use(cookieParser());
 
 //api
 app.use('/api',router)
