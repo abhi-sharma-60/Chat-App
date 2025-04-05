@@ -50,7 +50,4 @@ const conversationSchema = new mongoose.Schema({
 const MessageModel = mongoose.model('Message',messageSchema)
 const ConversationModel = mongoose.model('Conversation',conversationSchema)
 
-module.exports = {
-    MessageModel,
-    ConversationModel
-}
+export {MessageModel, ConversationModel}
