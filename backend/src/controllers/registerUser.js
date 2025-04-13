@@ -5,9 +5,9 @@ async function registerUser(request,response){
         const { name, email , password, profile_pic, googleId } = request.body
 
         const checkEmail = await UserModel.findOne({ email })
-        const checkGoogleId = await UserModel.findOne({ googleId }) 
+       // const checkGoogleId = await UserModel.findOne({ googleId }) 
 
-        if(checkEmail || checkGoogleId){
+        if(checkEmail /*|| checkGoogleId*/){
             return response.status(400).json({
                 message : "User already exists",
                 error : true,
@@ -19,10 +19,11 @@ async function registerUser(request,response){
             email,
             profile_pic,
             password,
-            googleId
+            //googleId
         }
 
-        const user = (await UserModel.create(payload))
+        const user = new UserModel(payload);
+        await user.save();
 
         return response.status(201).json({
             message : "User created successfully",
