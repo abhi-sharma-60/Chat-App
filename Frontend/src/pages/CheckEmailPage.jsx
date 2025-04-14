@@ -33,7 +33,9 @@ const CheckEmailPage = () => {
         setData({
           email: "",
         });
-        navigate("/password");
+        navigate("/password", {
+          state: response?.data?.data, 
+        });
       }
     } catch (error) {
       toast.error(error?.response?.data?.message);
@@ -47,7 +49,9 @@ const CheckEmailPage = () => {
           <LuCircleUserRound size={80} />
         </div>
 
-        <h3 className="text-center underline text-xl ">We are glad you are here for BaatCheet !!</h3>
+        <h3 className="text-center underline text-xl ">
+          We are glad you are here for BaatCheet !!
+        </h3>
         <form className="mt-2 grid gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-1">
             <label htmlFor="email">Email :</label>

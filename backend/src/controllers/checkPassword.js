@@ -5,9 +5,16 @@ async function checkPassword(request,response){
     try {
         const { password, userId } = request.body
 
-        const user = await UserModel.findById(userId).select("+password")
+       const user = await UserModel.findById(userId).select("+password");
 
-        const validPassword = await user.isPasswordCorrect(password);
+       if (!user) {
+         return response.status(404).json({
+           message: "User not found",
+           error: true,
+         });
+       }
+
+       const validPassword = await user.isPasswordCorrect(password);
 
         if(!validPassword){
             return response.status(400).json({
