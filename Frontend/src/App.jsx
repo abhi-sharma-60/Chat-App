@@ -11,7 +11,6 @@ function App() {
     <Toaster/>
       <main>
         <Outlet />
-
       </main>
     </>
   );

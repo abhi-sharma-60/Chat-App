@@ -34,7 +34,7 @@ const CheckEmailPage = () => {
           email: "",
         });
         navigate("/password", {
-          state: response?.data?.data, 
+          state: response?.data?.data,
         });
       }
     } catch (error) {
