@@ -4,6 +4,7 @@ import dotenv from 'dotenv'
 import connectDB from './db/index.js'
 import router from './routes/index.js'
 import cookieParser from "cookie-parser"
+import {app, server} from './socket/index.js'
 
 
 dotenv.config({
@@ -12,7 +13,7 @@ dotenv.config({
 
 const PORT = process.env.PORT
 
-const app = express()
+//const app = express()
 app.use(express.json())
 app.use(cors({
     origin: process.env.FRONTEND_URL,
@@ -30,4 +31,4 @@ connectDB().then(()=>{
 
 
 
-app.listen(PORT,()=>{console.log(`server running at ${PORT}...`)})
+server.listen(PORT,()=>{console.log(`server running at ${PORT}...`)})
