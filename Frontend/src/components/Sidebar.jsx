@@ -8,11 +8,13 @@ import { useSelector } from "react-redux";
 import EditUserDetails from "./EditUserDetails";
 import Divider from "./Divider";
 import { GoArrowUpLeft } from "react-icons/go";
+import SearchUser from "./SearchUser";
 
 const Sidebar = () => {
   const user = useSelector((state) => state?.user);
   const [editUserOpen, setEditUserOpen] = useState(false);
   const [allUser, setAllUser] = useState([]);
+  const [openSearchUser, setOpenSearchUser] = useState(false);
   return (
     <div className="w-full h-full grid grid-cols-[48px,1fr] bg-white ">
       <div className="bg-slate-100 w-12 h-full rounded-tr-lg rounded-br-lg py-5 text-slate-700 flex flex-col justify-between">
@@ -30,6 +32,7 @@ const Sidebar = () => {
           <div
             className="w-12 h-12 flex justify-center items-center cursor-pointer hover:bg-slate-300 rounded"
             title="Add friend"
+            onClick={() => setOpenSearchUser(true)}
           >
             <FaUserPlus size={20} />
           </div>
@@ -70,7 +73,7 @@ const Sidebar = () => {
           {allUser.length === 0 && (
             <div className="mt-12">
               <div className="flex justify-center items-center my-4 text-slate-500">
-                <GoArrowUpLeft size={50}/>
+                <GoArrowUpLeft size={50} />
               </div>
               <p className="text-lg text-center text-slate-400">
                 Explore users to state a conversation with .
@@ -83,7 +86,11 @@ const Sidebar = () => {
       {editUserOpen && (
         <EditUserDetails onClose={() => setEditUserOpen(false)} user={user} />
       )}
-      {/* */}
+
+      {/* search user */}
+      {openSearchUser && (
+        <SearchUser onClose={() => setOpenSearchUser(false)} />
+      )}
     </div>
   );
 };
