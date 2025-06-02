@@ -27,8 +27,8 @@ app.use('/api',router)
 
 connectDB().then(()=>{
     console.log("Database connected!")
+    server.listen(PORT,()=>{console.log(`server running at ${PORT}...`)})
 })
 
 
 
-server.listen(PORT,()=>{console.log(`server running at ${PORT}...`)})

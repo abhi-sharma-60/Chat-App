@@ -5,6 +5,8 @@ import getUserDetailsFromToken from '../helpers/getUserDetailsFromToken.js'
 import { UserModel } from '../models/usermodel.js'
 import { ConversationModel, MessageModel } from '../models/chatmodel.js'
 import getConversation from '../helpers/getConversation.js'
+import dotenv from 'dotenv'
+dotenv.config({ path: './.env' })
 
 const app = express()
 
