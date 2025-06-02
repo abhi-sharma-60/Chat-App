@@ -2,14 +2,15 @@ import React from "react";
 import Avatar from "./Avatar";
 import { Link } from "react-router-dom";
 
-const UserSearchCard = ({ user,onClose }) => {
+const UserSearchCard = ({ user, onClose }) => {
   return (
     <Link
-      to={"/" + user?._id} onClick={onClose}
+      to={"/" + user?._id}
+      onClick={onClose}
       className="flex items-center gap-3  p-2 mt-1  lg:p-4 border boarder-transparent border-slate-200 hover:border hover:border-primary cursor-pointer"
     >
       <div>
-        <Avatar width={50} height={50} name={user.name} />
+        <Avatar width={50} height={50} name={user.name} userId={user?._id} />
       </div>
       <div>
         <div className="font-semibold text-ellipsis line-clamp-1">
