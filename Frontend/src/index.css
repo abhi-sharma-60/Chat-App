@@ -61,6 +61,7 @@ button:focus-visible {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+  scroll-behavior: smooth;
 
   color-scheme: light dark;
   @apply bg-slate-200;
@@ -73,4 +74,7 @@ button:focus-visible {
 
 body {
   margin: 0;
+  scroll-behavior: smooth;
+
+
 }

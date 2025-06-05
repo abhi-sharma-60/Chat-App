@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import Avatar from "./Avatar";
@@ -12,6 +12,7 @@ import { IoClose } from "react-icons/io5";
 import Loading from "./Loading";
 import backgroundImage from "../assets/wallpaper.png";
 import { MdSend } from "react-icons/md";
+import moment from "moment";
 
 const MessagePage = () => {
   const params = useParams();
@@ -33,6 +34,16 @@ const MessagePage = () => {
     videoUrl: "",
   });
   const [loading, setLoading] = useState(false);
+  const [allMessage, setAllMessage] = useState([]);
+  const currentMessage = useRef();
+  useEffect(() => {
+    if (currentMessage.current) {
+      currentMessage.current.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
+    }
+  }, [allMessage]);
 
   const handleUploadImageVideoOpen = () => {
     setOpenImageVideoUpload((prev) => !prev);
@@ -88,10 +99,12 @@ const MessagePage = () => {
     if (socketConnection) {
       socketConnection.emit("message-page", params?.userId);
 
-      socketConnection.emit("seen", params.userId);
-
       socketConnection.on("message-user", (data) => {
         setDataUser(data);
+      });
+      socketConnection.on("message", (data) => {
+        console.log("message data", data);
+        setAllMessage(data);
       });
     }
   }, [socketConnection, params?.userId, user]);
@@ -108,14 +121,21 @@ const MessagePage = () => {
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    { 
+    {
       if (message.text || message.imageUrl || message.videoUrl) {
         if (socketConnection) {
           socketConnection.emit("new message", {
             sender: user?._id,
             receiver: params.userId,
-            text: message.imageUrl,
+            text: message.text,
+            imageUrl: message.imageUrl,
             videoUrl: message.videoUrl,
+            msgByUserId: user?._id,
+          });
+          setMessage({
+            text: "",
+            imageUrl: "",
+            videoUrl: "",
           });
         }
       }
@@ -162,10 +182,52 @@ const MessagePage = () => {
       </header>
 
       {/*** show all message  */}
-      <section className="h-[calc(100vh-128px)] overflow-x-hidden overflow-y-scroll scrollbar relative bg-slate-200 bg-opacity-40">
+      <section className="h-[calc(100vh-128px)] overflow-x-hidden overflow-y-scroll scrollbar relative bg-slate-200 bg-opacity-30">
+        {/** all msg show here */}
+        <div
+          className="flex flex-col gap-2 py-2 ml-3 mr-7 "
+          ref={currentMessage}
+        >
+          {allMessage.map((msg, index) => {
+            return (
+              <div
+                className={`bg-white p-1 py-2 rounded-md w-fit max-w-[280px] md:max-w-sm lg:max-w-md ${
+                  user._id === msg.msgByUserId ? "ml-auto" : ""
+                }`}
+                style={
+                  user._id === msg.msgByUserId
+                    ? { backgroundColor: "#d9fdd2" }
+                    : {}
+                }
+              >
+                <div className="w-full ">
+                  {msg?.imageUrl && (
+                    <img
+                      src={msg?.imageUrl}
+                      className="w-full h-full object-scale-down"
+                    />
+                  )}
+                  {msg?.videoUrl && (
+                    <video
+                      src={msg?.videoUrl}
+                      className="w-full h-full object-scale-down"
+                      controls
+                    />
+                  )}
+                </div>
+
+                <p className="px-2">{msg.text}</p>
+                <p className="text-xs ml-auto w-fit">
+                  {moment(msg.createdAt).format("hh:mm")}{" "}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
         {/** upload Image display */}
         {message.imageUrl && (
-          <div className="w-full h-full bg-slate-700 bg-opacity-30 flex items-center justify-center rounded overflow-hidden">
+          <div className="w-full h-full sticky bottom-0  bg-slate-700 bg-opacity-30 flex items-center justify-center rounded overflow-hidden">
             <div
               className="w-fit p-2 absolute top-0 right-0 cursor-pointer hover:text-red-500 "
               onClick={handleClearUploadImage}
@@ -183,7 +245,7 @@ const MessagePage = () => {
         )}
         {/** upload video display */}
         {message.videoUrl && (
-          <div className="w-full h-full bg-slate-700 bg-opacity-30 flex items-center justify-center rounded overflow-hidden">
+          <div className="w-full h-full sticky bottom-0  bg-slate-700 bg-opacity-30 flex items-center justify-center rounded overflow-hidden">
             <div
               className="w-fit p-2 absolute top-0 right-0 cursor-pointer hover:text-red-500 "
               onClick={handleClearUploadVideo}
@@ -202,11 +264,10 @@ const MessagePage = () => {
           </div>
         )}
         {loading && (
-          <div className="w-full h-full flex justify-center items-center">
+          <div className="w-full h-full sticky bottom-0  flex justify-center items-center">
             <Loading size={50} />
           </div>
         )}
-        show all message
       </section>
       {/*** send messgae */}
       <section className="h-16 bg-slate-300 flex items-center px-2">
@@ -259,7 +320,7 @@ const MessagePage = () => {
         {/** input box */}
         <form
           onSubmit={handleSendMessage}
-          className="h-3/5 w-full px-2 flex gap-2"
+          className="h-3/5 w-full px-2 flex gap-2 "
         >
           <input
             type="text"
