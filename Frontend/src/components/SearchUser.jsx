@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { IoIosSearch } from "react-icons/io";
 import Loading from "./Loading";
 import UserSearchCard from "./UserSearchCard";
@@ -10,6 +10,8 @@ const SearchUser = ({ onClose }) => {
   const [searchUser, setSearchUser] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState(""); // user search input
+
+  const modalRef = useRef(null);
 
   const handleSearchUser = async () => {
     const URL = `${import.meta.env.VITE_BACKEND_URL}/api/search-user`;
@@ -31,11 +33,26 @@ const SearchUser = ({ onClose }) => {
     handleSearchUser();
   }, [search]);
 
+  // ⬇️ Detect outside click and close modal
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [onClose]);
+
   return (
     <div className="fixed top-0 left-0 bottom-0 right-0 bg-slate-700 bg-opacity-40 p-2 z-10">
-      <div className="w-full max-w-lg mx-auto mt-10 text-black ">
-        {/** Input Search User */}
-        <div className="bg-white rounded-lg h-14 overflow-hidden flex ">
+      <div ref={modalRef} className="w-full max-w-lg mx-auto mt-10 text-black">
+        {/* Input Search User */}
+        <div className="bg-white rounded-lg h-14 overflow-hidden flex">
           <input
             type="text"
             placeholder="Search User By Name, Email..."
@@ -48,21 +65,18 @@ const SearchUser = ({ onClose }) => {
           </div>
         </div>
 
-        {/** Display search results */}
+        {/* Display search results */}
         <div className="bg-white rounded-lg mt-2 w-full p-4 h-[80vh] overflow-y-auto">
-          {/** No user Found */}
           {searchUser.length === 0 && !loading && (
             <p className="text-center text-slate-700">No user found!</p>
           )}
 
-          {/** Data is loading */}
           {loading && (
             <p className="w-full text-center text-slate-700 flex-col">
               <Loading />
             </p>
           )}
 
-          {/** Data is Available */}
           {searchUser.length !== 0 &&
             !loading &&
             searchUser.map((user) => (
