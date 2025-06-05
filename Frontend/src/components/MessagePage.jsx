@@ -122,24 +122,34 @@ const MessagePage = () => {
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    {
-      if (message.text || message.imageUrl || message.videoUrl) {
-        if (socketConnection) {
-          socketConnection.emit("new message", {
-            sender: user?._id,
-            receiver: params.userId,
-            text: message.text,
-            imageUrl: message.imageUrl,
-            videoUrl: message.videoUrl,
-            msgByUserId: user?._id,
-          });
-          setMessage({
-            text: "",
-            imageUrl: "",
-            videoUrl: "",
-          });
-        }
-      }
+    const trimmedText = message.text.trim();
+
+    // If the message is just whitespace and no image/video is selected
+    if (!trimmedText && !message.imageUrl && !message.videoUrl) {
+      // Clear the input box so placeholder reappears
+      setMessage({
+        text: "",
+        imageUrl: "",
+        videoUrl: "",
+      });
+      return;
+    }
+
+    // Send the message
+    if (socketConnection) {
+      socketConnection.emit("new message", {
+        sender: user?._id,
+        receiver: params.userId,
+        text: trimmedText,
+        imageUrl: message.imageUrl,
+        videoUrl: message.videoUrl,
+        msgByUserId: user?._id,
+      });
+      setMessage({
+        text: "",
+        imageUrl: "",
+        videoUrl: "",
+      });
     }
   };
 
