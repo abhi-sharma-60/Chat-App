@@ -8,6 +8,12 @@ const initialState = {
   token: "",
   onlineUser: [],
   socketConnection: null,
+  theme: "light", // Add theme state
+  college: "",
+  branch: "",
+  course: "",
+  skills: [],
+  studyYear: "",
 };
 
 export const userSlice = createSlice({
@@ -19,17 +25,30 @@ export const userSlice = createSlice({
       state.name = action.payload.name;
       state.email = action.payload.email;
       state.profile_pic = action.payload.profile_pic;
+      state.college = action.payload.college;
+      state.branch = action.payload.branch;
+      state.course = action.payload.course;
+      state.skills = action.payload.skills;
+      state.studyYear = action.payload.studyYear;
     },
     setToken: (state, action) => {
       state.token = action.payload;
     },
-    logout: (state, action) => {
+    toggleTheme: (state) => {
+      state.theme = state.theme === "light" ? "dark" : "light";
+    },
+    logout: (state) => {
       state._id = "";
       state.name = "";
       state.email = "";
       state.profile_pic = "";
       state.token = "";
       state.socketConnection = null;
+      state.college = "";
+      state.branch = "";
+      state.course = "";
+      state.skills = [];
+      state.studyYear = "";
     },
     setOnlineUser: (state, action) => {
       state.onlineUser = action.payload;
@@ -40,7 +59,13 @@ export const userSlice = createSlice({
   },
 }); 
 
-export const { setUser, setToken, logout, setOnlineUser, setSocketConnection } =
-  userSlice.actions;
+export const { 
+  setUser, 
+  setToken, 
+  logout, 
+  setOnlineUser, 
+  setSocketConnection,
+  toggleTheme 
+} = userSlice.actions;
 
 export default userSlice.reducer;

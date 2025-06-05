@@ -5,7 +5,12 @@ export default {
     extend: {
       colors: {
         primary: "#36b4bc",
-        secondary: "rgba(54, 180, 188, 0.9)", // 90% opacity
+        secondary: "rgba(54, 180, 188, 0.9)",
+        dark: {
+          primary: "#1a1a1a",
+          secondary: "#2d2d2d",
+          accent: "#36b4bc"
+        }
       },
     },
   },

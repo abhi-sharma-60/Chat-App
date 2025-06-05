@@ -17,10 +17,9 @@ import moment from "moment";
 const MessagePage = () => {
   const params = useParams();
   const navigate = useNavigate();
+  const theme = useSelector((state) => state.user.theme);
 
-  const socketConnection = useSelector(
-    (state) => state?.user?.socketConnection
-  );
+  const socketConnection = useSelector((state) => state?.user?.socketConnection);
   const user = useSelector((state) => state?.user);
 
   const [dataUser, setDataUser] = useState({
@@ -42,10 +41,9 @@ const MessagePage = () => {
   const [allMessage, setAllMessage] = useState([]);
   const currentMessage = useRef();
 
-  // 🛑 Prevent self-chat via route
   useEffect(() => {
     if (params.userId === user?._id) {
-      navigate("/"); // redirect to homepage or another page
+      navigate("/");
     }
   }, [params.userId, user?._id, navigate]);
 
@@ -94,7 +92,6 @@ const MessagePage = () => {
       socketConnection.emit("seen", params?.userId);
       socketConnection.on("message-user", (data) => setDataUser(data));
       socketConnection.on("message", (data) => {
-        console.log("message data", data);
         setAllMessage(data);
       });
     }
@@ -108,7 +105,6 @@ const MessagePage = () => {
     e.preventDefault();
     const trimmedText = message.text.trim();
 
-    // 🛑 Prevent sending to self
     if (user?._id === params?.userId) return;
 
     if (!trimmedText && !message.imageUrl && !message.videoUrl) {
@@ -129,15 +125,25 @@ const MessagePage = () => {
     }
   };
 
+  // Group messages by date
+  const groupedMessages = allMessage.reduce((groups, msg) => {
+    const date = moment(msg.createdAt).format('YYYY-MM-DD');
+    if (!groups[date]) {
+      groups[date] = [];
+    }
+    groups[date].push(msg);
+    return groups;
+  }, {});
+
   return (
     <div
       style={{ backgroundImage: `url(${backgroundImage})` }}
-      className="bg-no-repeat bg-cover"
+      className={`bg-no-repeat bg-cover ${theme === 'dark' ? 'bg-gray-900 text-white' : ''}`}
     >
-      <header className="sticky top-0 h-16 bg-white flex justify-between items-center px-4">
+      <header className={`sticky top-0 h-16 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} flex justify-between items-center px-4 shadow-md`}>
         <div className="flex items-center gap-4">
           <Link to={"/"} className="lg:hidden">
-            <FiArrowLeft size={25} />
+            <FiArrowLeft size={25} className={theme === 'dark' ? 'text-white' : ''} />
           </Link>
           <div className="mt-2">
             <Avatar
@@ -154,69 +160,78 @@ const MessagePage = () => {
             </h3>
             <p className="-my-2 text-sm">
               {dataUser?.online ? (
-                <span className="text-primary">online</span>
+                <span className="text-green-500">online</span>
               ) : (
-                <span className="text-slate-500">offline</span>
+                <span className="text-gray-500">offline</span>
               )}
             </p>
           </div>
         </div>
         <div>
-          <button className="cursor-pointer hover:text-primary">
+          <button className={`cursor-pointer hover:text-primary ${theme === 'dark' ? 'text-white' : ''}`}>
             <HiOutlineDotsVertical />
           </button>
         </div>
       </header>
 
-      <section className="h-[calc(100vh-128px)] overflow-x-hidden overflow-y-scroll scrollbar relative bg-slate-200 bg-opacity-30">
-        <div
-          className="flex flex-col gap-2 py-2 ml-3 mr-7"
-          ref={currentMessage}
-        >
-          {allMessage.map((msg, index) => (
-            <div
-              key={index}
-              className={`bg-white p-1 py-2 rounded-md w-fit max-w-[280px] md:max-w-sm lg:max-w-md ${
-                user._id === msg.msgByUserId ? "ml-auto" : ""
-              }`}
-              style={
-                user._id === msg.msgByUserId
-                  ? { backgroundColor: "#d9fdd2" }
-                  : {}
-              }
-            >
-              <div className="w-full">
-                {msg?.imageUrl && (
-                  <img
-                    src={msg?.imageUrl}
-                    className="w-full h-full object-scale-down"
-                  />
-                )}
-                {msg?.videoUrl && (
-                  <video
-                    src={msg?.videoUrl}
-                    className="w-full h-full object-scale-down"
-                    controls
-                  />
-                )}
+      <section className={`h-[calc(100vh-128px)] overflow-x-hidden overflow-y-scroll scrollbar relative ${theme === 'dark' ? 'bg-gray-800 bg-opacity-90' : 'bg-slate-200 bg-opacity-30'}`}>
+        <div className="flex flex-col gap-2 py-2 ml-3 mr-7" ref={currentMessage}>
+          {Object.entries(groupedMessages).map(([date, messages]) => (
+            <div key={date}>
+              <div className="flex justify-center my-4">
+                <span className={`px-4 py-1 rounded-full text-sm ${theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-white text-gray-600'}`}>
+                  {moment(date).calendar(null, {
+                    sameDay: '[Today]',
+                    lastDay: '[Yesterday]',
+                    lastWeek: 'dddd',
+                    sameElse: 'MMMM D, YYYY'
+                  })}
+                </span>
               </div>
-              <p className="px-2">{msg.text}</p>
-              <p className="text-xs ml-auto w-fit">
-                {moment(msg.createdAt).format("hh:mm")}
-              </p>
+              {messages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`p-3 rounded-lg w-fit max-w-[280px] md:max-w-sm lg:max-w-md ${
+                    user._id === msg.msgByUserId 
+                      ? "ml-auto bg-primary text-white" 
+                      : theme === 'dark' ? 'bg-gray-700' : 'bg-white'
+                  }`}
+                >
+                  <div className="w-full">
+                    {msg?.imageUrl && (
+                      <img
+                        src={msg?.imageUrl}
+                        className="w-full h-full object-scale-down rounded-lg mb-2"
+                        alt="Shared image"
+                      />
+                    )}
+                    {msg?.videoUrl && (
+                      <video
+                        src={msg?.videoUrl}
+                        className="w-full h-full object-scale-down rounded-lg mb-2"
+                        controls
+                      />
+                    )}
+                  </div>
+                  <p className="px-2 break-words">{msg.text}</p>
+                  <p className="text-xs ml-auto w-fit mt-1 opacity-75">
+                    {moment(msg.createdAt).format("HH:mm")}
+                  </p>
+                </div>
+              ))}
             </div>
           ))}
         </div>
 
         {message.imageUrl && (
-          <div className="w-full h-full sticky bottom-0 bg-slate-700 bg-opacity-30 flex items-center justify-center rounded overflow-hidden">
+          <div className="w-full h-full sticky bottom-0 bg-black/50 flex items-center justify-center rounded overflow-hidden">
             <div
               className="w-fit p-2 absolute top-0 right-0 cursor-pointer hover:text-red-500"
               onClick={handleClearUploadImage}
             >
-              <IoClose size={30} />
+              <IoClose size={30} className="text-white" />
             </div>
-            <div className="bg-white p-3">
+            <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} p-3 rounded-lg`}>
               <img
                 src={message.imageUrl}
                 alt="uploadImage"
@@ -227,14 +242,14 @@ const MessagePage = () => {
         )}
 
         {message.videoUrl && (
-          <div className="w-full h-full sticky bottom-0 bg-slate-700 bg-opacity-30 flex items-center justify-center rounded overflow-hidden">
+          <div className="w-full h-full sticky bottom-0 bg-black/50 flex items-center justify-center rounded overflow-hidden">
             <div
               className="w-fit p-2 absolute top-0 right-0 cursor-pointer hover:text-red-500"
               onClick={handleClearUploadVideo}
             >
-              <IoClose size={30} />
+              <IoClose size={30} className="text-white" />
             </div>
-            <div className="bg-white p-3">
+            <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} p-3 rounded-lg`}>
               <video
                 src={message.videoUrl}
                 className="aspect-square w-full h-full max-w-sm m-2 object-scale-down"
@@ -253,21 +268,25 @@ const MessagePage = () => {
         )}
       </section>
 
-      <section className="h-16 bg-slate-300 flex items-center px-2">
+      <section className={`h-16 ${theme === 'dark' ? 'bg-gray-800' : 'bg-slate-300'} flex items-center px-2`}>
         <div className="relative">
           <button
             onClick={handleUploadImageVideoOpen}
-            className="flex justify-center items-center w-11 h-11 rounded-full hover:bg-primary hover:text-white transition-all duration-200 ease-in-out hover:scale-105"
+            className={`flex justify-center items-center w-11 h-11 rounded-full ${
+              theme === 'dark' 
+                ? 'hover:bg-gray-700 text-white' 
+                : 'hover:bg-primary hover:text-white'
+            } transition-all duration-200 ease-in-out hover:scale-105`}
           >
             <IoMdAdd size={25} />
           </button>
 
           {openImageVideoUpload && (
-            <div className="bg-white shadow rounded absolute bottom-14 w-36 p-2">
+            <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} shadow-lg rounded-lg absolute bottom-14 w-36 p-2`}>
               <form>
                 <label
                   htmlFor="uploadImage"
-                  className="flex items-center gap-3 p-2 px-3 hover:bg-slate-200 cursor-pointer"
+                  className="flex items-center gap-3 p-2 px-3 hover:bg-opacity-10 hover:bg-white cursor-pointer rounded"
                 >
                   <div className="text-primary">
                     <FaImage size={18} />
@@ -276,7 +295,7 @@ const MessagePage = () => {
                 </label>
                 <label
                   htmlFor="uploadVideo"
-                  className="flex items-center gap-3 p-2 px-3 hover:bg-slate-200 cursor-pointer"
+                  className="flex items-center gap-3 p-2 px-3 hover:bg-opacity-10 hover:bg-white cursor-pointer rounded"
                 >
                   <div className="text-purple-500">
                     <FaVideo size={18} />
@@ -288,12 +307,14 @@ const MessagePage = () => {
                   id="uploadImage"
                   onChange={handleUploadImage}
                   className="hidden"
+                  accept="image/*"
                 />
                 <input
                   type="file"
                   id="uploadVideo"
                   onChange={handleUploadVideo}
                   className="hidden"
+                  accept="video/*"
                 />
               </form>
             </div>
@@ -306,12 +327,18 @@ const MessagePage = () => {
         >
           <input
             type="text"
-            className="py-1 px-4 outline-none w-full h-full rounded-full"
-            placeholder="type your message"
+            className={`py-1 px-4 outline-none w-full h-full rounded-full ${
+              theme === 'dark' ? 'bg-gray-700 text-white' : 'bg-white'
+            }`}
+            placeholder="Type your message..."
             value={message.text}
             onChange={handleOnChange}
           />
-          <button className="flex justify-center items-center w-11 h-11 rounded-full text-primary hover:bg-secondary hover:text-white transition-all duration-200 ease-in-out hover:scale-105">
+          <button className={`flex justify-center items-center w-11 h-11 rounded-full ${
+            theme === 'dark' 
+              ? 'text-primary hover:bg-gray-700' 
+              : 'text-primary hover:bg-secondary hover:text-white'
+          } transition-all duration-200 ease-in-out hover:scale-105`}>
             <MdSend size={30} />
           </button>
         </form>

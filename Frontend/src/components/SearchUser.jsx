@@ -5,14 +5,15 @@ import UserSearchCard from "./UserSearchCard";
 import toast from "react-hot-toast";
 import axios from "axios";
 import { IoCloseSharp } from "react-icons/io5";
-import { useSelector } from "react-redux"; // ✅ import selector
+import { useSelector } from "react-redux";
 
 const SearchUser = ({ onClose }) => {
   const [searchUser, setSearchUser] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [searchType, setSearchType] = useState("name"); // Add search type state
 
-  const user = useSelector((state) => state.user); // ✅ get logged-in user
+  const user = useSelector((state) => state.user);
   const modalRef = useRef(null);
 
   const handleSearchUser = async () => {
@@ -21,6 +22,7 @@ const SearchUser = ({ onClose }) => {
       setLoading(true);
       const response = await axios.post(URL, {
         search: search,
+        searchType: searchType
       });
       setLoading(false);
       setSearchUser(response.data.data);
@@ -32,7 +34,7 @@ const SearchUser = ({ onClose }) => {
 
   useEffect(() => {
     handleSearchUser();
-  }, [search]);
+  }, [search, searchType]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -47,47 +49,54 @@ const SearchUser = ({ onClose }) => {
   }, [onClose]);
 
   return (
-    <div className="fixed top-0 left-0 bottom-0 right-0 bg-slate-700 bg-opacity-40 p-2 z-10">
+    <div className="fixed top-0 left-0 bottom-0 right-0 bg-black/50 p-2 z-10">
       <div ref={modalRef} className="w-full max-w-lg mx-auto mt-10 text-black">
-        <div className="bg-white rounded-lg h-14 overflow-hidden flex">
-          <input
-            type="text"
-            placeholder="Search User By Name, Email..."
-            className="w-full outline-none py-1 h-full px-5"
-            onChange={(e) => setSearch(e.target.value)}
-            value={search}
-          />
-          <div className="h-14 w-14 flex justify-center items-center cursor-pointer">
-            <IoIosSearch size={25} />
+        <div className="bg-white rounded-lg p-4 shadow-lg">
+          <div className="flex gap-4 mb-4">
+            <input
+              type="text"
+              placeholder="Search users..."
+              className="w-full outline-none py-2 px-4 border rounded-lg focus:border-primary"
+              onChange={(e) => setSearch(e.target.value)}
+              value={search}
+            />
+            <select
+              value={searchType}
+              onChange={(e) => setSearchType(e.target.value)}
+              className="px-4 py-2 border rounded-lg focus:border-primary"
+            >
+              <option value="name">Name</option>
+              <option value="college">College</option>
+              <option value="skills">Skills</option>
+              <option value="branch">Branch</option>
+            </select>
+          </div>
+
+          <div className="max-h-[70vh] overflow-y-auto rounded-lg">
+            {searchUser.length === 0 && !loading && (
+              <p className="text-center text-gray-500 py-4">No users found</p>
+            )}
+            {loading && (
+              <div className="text-center py-4">
+                <Loading />
+              </div>
+            )}
+
+            {searchUser.length > 0 &&
+              !loading &&
+              searchUser
+                .filter((u) => u._id !== user?._id)
+                .map((user) => (
+                  <UserSearchCard key={user._id} user={user} onClose={onClose} />
+                ))}
           </div>
         </div>
 
-        <div className="bg-white rounded-lg mt-2 w-full p-4 h-[80vh] overflow-y-auto">
-          {searchUser.length === 0 && !loading && (
-            <p className="text-center text-slate-700">No user found!</p>
-          )}
-          {loading && (
-            <p className="w-full text-center text-slate-700 flex-col">
-              <Loading />
-            </p>
-          )}
-
-          {searchUser.length !== 0 &&
-            !loading &&
-            searchUser
-              .filter((u) => u._id !== user?._id) // ✅ filter self
-              .map((user) => (
-                <UserSearchCard key={user._id} user={user} onClose={onClose} />
-              ))}
-        </div>
-      </div>
-
-      <div
-        className="absolute top-0 right-0 text-2xl p-2 lg:text-4xl hover:text-white"
-        onClick={onClose}
-      >
-        <button>
-          <IoCloseSharp size={40} color="black" />
+        <button
+          className="absolute top-4 right-4 p-2 hover:bg-gray-200 rounded-full transition-colors"
+          onClick={onClose}
+        >
+          <IoCloseSharp size={24} />
         </button>
       </div>
     </div>
