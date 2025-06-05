@@ -9,7 +9,7 @@ import { setUser } from "../redux/userSlice";
 
 const EditUserDetails = ({ onClose, user }) => {
   const [data, setData] = useState({
-    name: user?.user,
+    name: user?.name,
     profile_pic: user?.profile_pic,
   });
   const uploadPhotoRef = useRef();
@@ -53,9 +53,13 @@ const EditUserDetails = ({ onClose, user }) => {
     const URL = `${import.meta.env.VITE_BACKEND_URL}/api/update-user`;
 
     try {
+      const payload = {
+        name: data.name,
+        profile_pic: data.profile_pic
+      };
       const response = await axios({
         method: "post",
-        data: data,
+        data: payload,
         url: URL,
         withCredentials: true, // ✅ THIS IS THE FIX
       });
@@ -125,7 +129,7 @@ const EditUserDetails = ({ onClose, user }) => {
               Cancel
             </button>
             <button
-              onClick={()=>handleSubmit}
+              onClick={handleSubmit}
               className="border-primary bg-white text-black border px-4 py-1 rounded hover:bg-primary hover:text-white"
             >
               Save
