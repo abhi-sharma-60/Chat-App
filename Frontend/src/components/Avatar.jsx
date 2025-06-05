@@ -2,18 +2,18 @@ import React from "react";
 import { LuCircleUserRound } from "react-icons/lu";
 import { useSelector } from "react-redux";
 
-const Avatar = ({ userId, name, imageUrl, width, height }) => {
+const Avatar = ({ userId, name, imageUrl, width = 40, height = 40 }) => {
   const onlineUser = useSelector((state) => state?.user?.onlineUser);
 
   let avatarName = "";
   if (name) {
     const splitName = name?.split(" ");
-    if (splitName.length > 1) {
-      avatarName = splitName[0][0] + splitName[1][0];
-    } else {
-      avatarName = splitName[0][0];
-    }
+    avatarName =
+      splitName.length > 1
+        ? splitName[0][0] + splitName[1][0]
+        : splitName[0][0];
   }
+
   const bgColor = [
     "bg-blue-200",
     "bg-indigo-200",
@@ -27,38 +27,31 @@ const Avatar = ({ userId, name, imageUrl, width, height }) => {
     "bg-violet-200",
   ];
   const idx = Math.floor(Math.random() * bgColor.length);
-
   const isOnline = onlineUser.includes(userId);
-  console.log("Online users:", onlineUser);
-  console.log("Current userId:", userId);
-  console.log("Is online?", onlineUser.includes(userId));
 
   return (
     <div
-      style={{ width: width + "px", height: height + "px" }}
-      className={`text-slate-800 rounded-full font-bold relative`}
+      style={{ width: `${width}px`, height: `${height}px` }}
+      className="relative rounded-full overflow-hidden"
     >
       {imageUrl ? (
         <img
           src={imageUrl}
-          width={width}
-          height={height}
           alt={name}
-          className="overflow-hidden rounded-full "
+          className="w-full h-full object-cover rounded-full"
         />
       ) : name ? (
         <div
-          style={{ width: width + "px", height: height + "px" }}
-          className={`overflow-hidden rounded-full flex justify-center items-center text-4xl ${bgColor[idx]}  `}
+          className={`flex items-center justify-center text-white font-semibold text-xl ${bgColor[idx]} w-full h-full aspect-square rounded-full`}
         >
           {avatarName}
         </div>
       ) : (
-        <LuCircleUserRound size={width} />
+        <LuCircleUserRound size={width} className="text-gray-400" />
       )}
 
       {isOnline && (
-        <div className="bg-green-500 w-3 h-3 rounded-full absolute bottom-0 right-0 z-10 border-2 border-white"></div>
+        <span className="absolute bottom-1 right-1 w-3 h-3 bg-green-600 border-2 border-white rounded-full z-10"></span>
       )}
     </div>
   );
