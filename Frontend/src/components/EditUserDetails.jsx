@@ -4,43 +4,37 @@ import uploadFile from "../../helpers/uploadFile";
 import Divider from "./Divider";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../redux/userSlice";
+import { IoCloseSharp } from "react-icons/io5";
 
 const EditUserDetails = ({ onClose, user }) => {
   const [data, setData] = useState({
     name: user?.name,
     profile_pic: user?.profile_pic,
   });
+  const theme = useSelector((state) => state.user.theme);
   const uploadPhotoRef = useRef();
   const dispatch = useDispatch();
+
   useEffect(() => {
-    setData((prev) => {
-      return {
-        ...prev,
-        ...user,
-      };
-    });
+    setData((prev) => ({ ...prev, ...user }));
   }, [user]);
+
   const handleOnChange = (e) => {
     const { name, value } = e.target;
-    setData((prev) => {
-      return {
-        ...prev,
-        [name]: value,
-      };
-    });
+    setData((prev) => ({ ...prev, [name]: value }));
   };
+
   const handleUploadPhoto = async (e) => {
     const file = e.target.files[0];
     const uploadPhoto = await uploadFile(file);
-    setData((prev) => {
-      return {
-        ...prev,
-        profile_pic: uploadPhoto?.url,
-      };
-    });
+    setData((prev) => ({
+      ...prev,
+      profile_pic: uploadPhoto?.url,
+    }));
   };
+
   const handleOpenUploadPhoto = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -55,82 +49,118 @@ const EditUserDetails = ({ onClose, user }) => {
     try {
       const payload = {
         name: data.name,
-        profile_pic: data.profile_pic
+        profile_pic: data.profile_pic,
       };
-      const response = await axios({
-        method: "post",
-        data: payload,
-        url: URL,
-        withCredentials: true, // ✅ THIS IS THE FIX
+      const response = await axios.post(URL, payload, {
+        withCredentials: true,
       });
 
       toast.success(response?.data?.message);
       if (response.data.success) {
         dispatch(setUser(response?.data?.data));
-        onClose(); // 👈 CLOSE MODAL HERE
+        onClose();
       }
-      console.log(response);
     } catch (error) {
-      toast.error(error?.response?.data?.message);
+      toast.error(error?.response?.data?.message || "Update failed");
     }
-
-    // console.log(data);
   };
 
   return (
-    <div className="fixed top-0 bottom-0 right-0 left-0 bg-gray-700 bg-opacity-40 flex justify-center items-center z-10">
-      <div className="bg-white p-4 py-6 m-1 rounded w-full max-w-sm">
-        <h2 className="font-semibold">Profile Details</h2>
-        <p className="text-sm ">Edit User Details</p>
-        <form className="grid gap-3 mt-3" onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="name">Name: </label>
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center px-4 ${
+        theme === "dark"
+          ? "bg-black/60 backdrop-blur-sm"
+          : "bg-black/40 backdrop-blur-sm"
+      }`}
+    >
+      <div
+        className={`w-full max-w-md rounded-2xl shadow-lg border p-6 relative ${
+          theme === "dark"
+            ? "bg-gray-900 border-gray-700 text-white"
+            : "bg-white border-gray-200 text-gray-800"
+        }`}
+      >
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${
+            theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"
+          }`}
+        >
+          <IoCloseSharp size={22} />
+        </button>
+
+        <h2 className="text-2xl font-bold text-center mb-2">Profile Details</h2>
+        <p className="text-sm text-center mb-4">
+          Edit your profile information
+        </p>
+
+        <form className="grid gap-4" onSubmit={handleSubmit}>
+          {/* Name */}
+          <div>
+            <label htmlFor="name" className="block mb-1 font-medium">
+              Name:
+            </label>
             <input
-              type="text"
-              name="name"
               id="name"
+              name="name"
+              type="text"
               value={data.name}
               onChange={handleOnChange}
-              className="w-full py-1 px-2 focus:outline-primary border"
+              className={`w-full px-3 py-2 rounded-lg border outline-none transition ${
+                theme === "dark"
+                  ? "bg-gray-800 text-white border-gray-700 focus:ring-2 focus:ring-purple-500"
+                  : "bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-purple-500"
+              }`}
             />
           </div>
+
+          {/* Profile Picture */}
           <div>
-            <div>Photo:</div>
-            <div className="my-1 flex items-center gap-4">
+            <label className="block font-medium mb-1">Profile Photo:</label>
+            <div className="flex items-center gap-4 mt-1">
               <Avatar
-                width={40}
-                height={40}
+                width={48}
+                height={48}
                 imageUrl={data.profile_pic}
                 name={data?.name}
               />
-              <label htmlFor="profile_pic">
-                <button
-                  className="font-semibold"
-                  onClick={handleOpenUploadPhoto}
-                >
-                  Change Photo
-                </button>
-                <input
-                  type="file"
-                  id="profile_pic"
-                  className="hidden"
-                  onChange={handleUploadPhoto}
-                  ref={uploadPhotoRef}
-                />
-              </label>
+              <button
+                className={`text-sm font-medium underline hover:opacity-80 ${
+                  theme === "dark" ? "text-white" : "text-purple-600"
+                }`}
+                onClick={handleOpenUploadPhoto}
+              >
+                Change Photo
+              </button>
+              <input
+                type="file"
+                id="profile_pic"
+                className="hidden"
+                onChange={handleUploadPhoto}
+                ref={uploadPhotoRef}
+              />
             </div>
           </div>
+
           <Divider />
-          <div className="flex gap-4 w-fit ml-auto ">
+
+          {/* Buttons */}
+          <div className="flex justify-end gap-4">
             <button
+              type="button"
               onClick={onClose}
-              className="border-primary text-black border px-4 py-1 rounded hover:bg-primary hover:text-white"
+              className={`px-4 py-2 rounded border ${
+                theme === "dark"
+                  ? "border-gray-600 hover:bg-gray-800"
+                  : "border-gray-300 hover:bg-gray-100"
+              }`}
             >
               Cancel
             </button>
             <button
-              onClick={handleSubmit}
-              className="border-primary bg-white text-black border px-4 py-1 rounded hover:bg-primary hover:text-white"
+              type="submit"
+              className={`px-4 py-2 rounded bg-purple-600 text-white hover:bg-purple-700`}
             >
               Save
             </button>
@@ -140,4 +170,5 @@ const EditUserDetails = ({ onClose, user }) => {
     </div>
   );
 };
+
 export default React.memo(EditUserDetails);

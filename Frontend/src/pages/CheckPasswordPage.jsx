@@ -1,34 +1,31 @@
 import React, { useEffect, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import uploadFile from "../../helpers/uploadFile";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { LuCircleUserRound } from "react-icons/lu";
 import Avatar from "../components/Avatar";
 import { useDispatch } from "react-redux";
-import { setToken, setUser } from "../redux/userSlice";
+import { setToken } from "../redux/userSlice";
 
 const CheckPasswordPage = () => {
   const location = useLocation();
-
   const dispatch = useDispatch();
 
   const [data, setData] = useState({
     password: "",
-    userId: location?.state?._id || "", // assuming _id is passed in state
+    userId: location?.state?._id || "",
   });
+
   const handleOnchange = (e) => {
     const { name, value } = e.target;
-    setData((preve) => {
-      return {
-        ...preve,
-        [name]: value,
-      };
-    });
+    setData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
+
   const navigate = useNavigate();
-  // const = location.state;
 
   useEffect(() => {
     if (!location?.state?.name) {
@@ -47,7 +44,7 @@ const CheckPasswordPage = () => {
         url: URL,
         data: {
           password: data.password,
-          userId: location?.state?._id || "", // assuming _id is passed in state
+          userId: location?.state?._id || "",
         },
         withCredentials: true,
       });
@@ -66,27 +63,29 @@ const CheckPasswordPage = () => {
   };
 
   return (
-    <div className="mt-5">
-      <div className=" text-black bg-white w-full max-w-md  rounded overflow-hidden p-4 mx-auto  ">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-indigo-100 via-purple-100 to-pink-100 p-6">
+      <div className="bg-white/90 backdrop-blur-md max-w-md w-full rounded-3xl shadow-xl p-8 border border-purple-200 text-black">
         <div className="w-fit mx-auto mb-4 flex justify-center items-center flex-col">
-          {/* <LuCircleUserRound size={80} /> */}
           <Avatar
             width={80}
             height={80}
             name={location?.state?.name}
             imageUrl={location?.state?.profile_pic}
           />
-          <h2 className="font-semibold text-lg mt-2">
+          <h2 className="font-semibold text-lg mt-2 text-purple-700">
             {location?.state?.name}
           </h2>
         </div>
 
-        <h3 className="text-center underline text-xl ">
+        <h3 className="text-center underline text-xl text-purple-700 mb-6">
           We are glad you are here for BaatCheet !!
         </h3>
-        <form className="mt-2 grid gap-4" onSubmit={handleSubmit}>
+
+        <form className="grid gap-5" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-1">
-            <label htmlFor="password">Password :</label>
+            <label htmlFor="password" className="font-semibold text-purple-600">
+              Password
+            </label>
             <input
               type="password"
               id="password"
@@ -96,7 +95,7 @@ const CheckPasswordPage = () => {
                   ? `${location.state.name.split(" ")[0]}, enter your password`
                   : "Enter your password"
               }`}
-              className="bg-slate-100 px-2 py-1 focus:outline-primary"
+              className="bg-purple-50 px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
               value={data.password}
               onChange={handleOnchange}
               required
@@ -105,17 +104,18 @@ const CheckPasswordPage = () => {
 
           <button
             type="submit"
-            className="bg-primary text-white text-lg  px-4 py-2 rounded hover:bg-secondary mt-2 font-bold "
+            className="bg-purple-600 hover:bg-purple-700 text-white text-lg font-semibold rounded-lg py-3 transition"
           >
             Login
           </button>
         </form>
-        <p className="text-center my-3">
+
+        <p className="text-center mt-6 text-purple-700">
           <Link
-            to={"/forgot-password"}
-            className=" hover:text-primary font-semibold "
+            to="/forgot"
+            className="font-semibold underline hover:text-purple-900"
           >
-            Forgot password ?
+            Forgot Password?
           </Link>
         </p>
       </div>

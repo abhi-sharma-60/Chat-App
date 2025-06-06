@@ -1,15 +1,26 @@
-import { useState } from "react";
-import "./App.css";
+import React, { useEffect } from "react";
 import { Outlet } from "react-router-dom";
+import { useSelector } from "react-redux";
 import toast, { Toaster } from "react-hot-toast";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0);
+  const theme = useSelector((state) => state.user.theme);
+
+  // Apply theme to <html>
+  useEffect(() => {
+    document.documentElement.classList.remove("light", "dark");
+    document.documentElement.classList.add(theme);
+  }, [theme]);
 
   return (
     <>
-    <Toaster/>
-      <main>
+      <Toaster />
+      <main
+        className={`min-h-screen ${
+          theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"
+        }`}
+      >
         <Outlet />
       </main>
     </>

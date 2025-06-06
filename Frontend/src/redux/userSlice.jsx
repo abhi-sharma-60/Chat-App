@@ -1,4 +1,13 @@
+// userSlice.js
 import { createSlice } from "@reduxjs/toolkit";
+
+const getInitialTheme = () => {
+  try {
+    return localStorage.getItem("theme") || "light";
+  } catch {
+    return "light";
+  }
+};
 
 const initialState = {
   _id: "",
@@ -8,6 +17,12 @@ const initialState = {
   token: "",
   onlineUser: [],
   socketConnection: null,
+  theme: getInitialTheme(), // ✅ set theme once
+  college: "",
+  branch: "",
+  course: "",
+  skills: [],
+  studyYear: "",
 };
 
 export const userSlice = createSlice({
@@ -15,21 +30,33 @@ export const userSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action) => {
-      state._id = action.payload._id;
-      state.name = action.payload.name;
-      state.email = action.payload.email;
-      state.profile_pic = action.payload.profile_pic;
+      Object.assign(state, action.payload);
     },
     setToken: (state, action) => {
       state.token = action.payload;
     },
-    logout: (state, action) => {
-      state._id = "";
-      state.name = "";
-      state.email = "";
-      state.profile_pic = "";
-      state.token = "";
-      state.socketConnection = null;
+    toggleTheme: (state) => {
+      state.theme = state.theme === "light" ? "dark" : "light";
+      try {
+        localStorage.setItem("theme", state.theme); // ✅ set theme in reducer safely
+      } catch (e) {
+        console.error("Could not persist theme");
+      }
+    },
+    logout: (state) => {
+      Object.assign(state, {
+        _id: "",
+        name: "",
+        email: "",
+        profile_pic: "",
+        token: "",
+        socketConnection: null,
+        college: "",
+        branch: "",
+        course: "",
+        skills: [],
+        studyYear: "",
+      });
     },
     setOnlineUser: (state, action) => {
       state.onlineUser = action.payload;
@@ -38,9 +65,15 @@ export const userSlice = createSlice({
       state.socketConnection = action.payload;
     },
   },
-}); 
+});
 
-export const { setUser, setToken, logout, setOnlineUser, setSocketConnection } =
-  userSlice.actions;
+export const {
+  setUser,
+  setToken,
+  logout,
+  setOnlineUser,
+  setSocketConnection,
+  toggleTheme,
+} = userSlice.actions;
 
 export default userSlice.reducer;

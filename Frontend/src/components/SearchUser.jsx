@@ -1,18 +1,19 @@
 import React, { useEffect, useState, useRef } from "react";
-import { IoIosSearch } from "react-icons/io";
+import { IoCloseSharp } from "react-icons/io5";
 import Loading from "./Loading";
 import UserSearchCard from "./UserSearchCard";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { IoCloseSharp } from "react-icons/io5";
-import { useSelector } from "react-redux"; // ✅ import selector
+import { useSelector } from "react-redux";
 
 const SearchUser = ({ onClose }) => {
   const [searchUser, setSearchUser] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+  const [searchType, setSearchType] = useState("name");
 
-  const user = useSelector((state) => state.user); // ✅ get logged-in user
+  const user = useSelector((state) => state.user);
+  const theme = useSelector((state) => state.user.theme);
   const modalRef = useRef(null);
 
   const handleSearchUser = async () => {
@@ -21,9 +22,38 @@ const SearchUser = ({ onClose }) => {
       setLoading(true);
       const response = await axios.post(URL, {
         search: search,
+        searchType: searchType,
       });
+
+      let results = response.data.data || [];
+
+      // Add permanent demo user
+      const demoUser = {
+        _id: "demo-user-id",
+        name: "Demo User",
+        email: "demo@example.com",
+        profile_pic: "https://via.placeholder.com/150",
+        branch: "Computer Science",
+        college: "Virtual University",
+        skills: ["React", "Node.js", "CSS"],
+        about: "I am a demo user to preview chat features!",
+      };
+
+      const isMatch =
+        demoUser.name.toLowerCase().includes(search.toLowerCase()) ||
+        demoUser.college.toLowerCase().includes(search.toLowerCase()) ||
+        demoUser.skills
+          .join(", ")
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+        demoUser.branch.toLowerCase().includes(search.toLowerCase());
+
+      if (isMatch) {
+        results = [demoUser, ...results];
+      }
+
+      setSearchUser(results);
       setLoading(false);
-      setSearchUser(response.data.data);
     } catch (error) {
       toast.error(error?.response?.data?.message || "Something went wrong");
       setLoading(false);
@@ -32,7 +62,7 @@ const SearchUser = ({ onClose }) => {
 
   useEffect(() => {
     handleSearchUser();
-  }, [search]);
+  }, [search, searchType]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -47,48 +77,100 @@ const SearchUser = ({ onClose }) => {
   }, [onClose]);
 
   return (
-    <div className="fixed top-0 left-0 bottom-0 right-0 bg-slate-700 bg-opacity-40 p-2 z-10">
-      <div ref={modalRef} className="w-full max-w-lg mx-auto mt-10 text-black">
-        <div className="bg-white rounded-lg h-14 overflow-hidden flex">
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center px-2 ${
+        theme === "dark"
+          ? "bg-black/60 backdrop-blur-sm"
+          : "bg-black/40 backdrop-blur-sm"
+      }`}
+    >
+      <div
+        ref={modalRef}
+        className={`w-full max-w-2xl rounded-2xl shadow-xl border p-6 relative
+          ${
+            theme === "dark"
+              ? "bg-gray-900 border-gray-700 text-white"
+              : "bg-white/90 border-purple-200 text-purple-800"
+          }
+        `}
+      >
+        {/* Close Button */}
+        <button
+          className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${
+            theme === "dark" ? "hover:bg-gray-700" : "hover:bg-purple-100"
+          }`}
+          onClick={onClose}
+        >
+          <IoCloseSharp size={22} />
+        </button>
+
+        {/* Header */}
+        <h2
+          className={`text-2xl font-bold mb-4 text-center ${
+            theme === "dark" ? "text-white" : "text-purple-800"
+          }`}
+        >
+          Search Users
+        </h2>
+
+        {/* Search Bar */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <input
             type="text"
-            placeholder="Search User By Name, Email..."
-            className="w-full outline-none py-1 h-full px-5"
+            placeholder="Search by name, branch, college..."
+            className={`flex-1 py-2 px-4 rounded-lg border focus:outline-none focus:ring-2
+              ${
+                theme === "dark"
+                  ? "bg-gray-800 border-gray-700 text-white focus:ring-purple-500"
+                  : "bg-white border-purple-300 text-purple-900 focus:ring-purple-500"
+              }
+            `}
             onChange={(e) => setSearch(e.target.value)}
             value={search}
           />
-          <div className="h-14 w-14 flex justify-center items-center cursor-pointer">
-            <IoIosSearch size={25} />
-          </div>
+          <select
+            value={searchType}
+            onChange={(e) => setSearchType(e.target.value)}
+            className={`py-2 px-4 rounded-lg border focus:outline-none focus:ring-2
+              ${
+                theme === "dark"
+                  ? "bg-gray-800 border-gray-700 text-white focus:ring-purple-500"
+                  : "bg-white border-purple-300 text-purple-900 focus:ring-purple-500"
+              }
+            `}
+          >
+            <option value="name">Name</option>
+            <option value="college">College</option>
+            <option value="skills">Skills</option>
+            <option value="branch">Branch</option>
+          </select>
         </div>
 
-        <div className="bg-white rounded-lg mt-2 w-full p-4 h-[80vh] overflow-y-auto">
-          {searchUser.length === 0 && !loading && (
-            <p className="text-center text-slate-700">No user found!</p>
-          )}
+        {/* Search Results */}
+        <div className="max-h-[65vh] overflow-y-auto">
           {loading && (
-            <p className="w-full text-center text-slate-700 flex-col">
+            <div className="py-6 text-center">
               <Loading />
+            </div>
+          )}
+
+          {!loading && searchUser.length === 0 && (
+            <p
+              className={`text-center py-6 ${
+                theme === "dark" ? "text-gray-400" : "text-slate-500"
+              }`}
+            >
+              No users found.
             </p>
           )}
 
-          {searchUser.length !== 0 &&
-            !loading &&
+          {!loading &&
             searchUser
-              .filter((u) => u._id !== user?._id) // ✅ filter self
+              .filter((u) => u._id !== user?._id)
               .map((user) => (
                 <UserSearchCard key={user._id} user={user} onClose={onClose} />
               ))}
         </div>
-      </div>
-
-      <div
-        className="absolute top-0 right-0 text-2xl p-2 lg:text-4xl hover:text-white"
-        onClick={onClose}
-      >
-        <button>
-          <IoCloseSharp size={40} color="black" />
-        </button>
       </div>
     </div>
   );

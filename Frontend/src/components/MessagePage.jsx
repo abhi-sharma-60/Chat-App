@@ -7,17 +7,16 @@ import { FiArrowLeft } from "react-icons/fi";
 import { IoMdAdd } from "react-icons/io";
 import { FaImage } from "react-icons/fa6";
 import { FaVideo } from "react-icons/fa";
-import uploadFile from "../../helpers/uploadFile";
 import { IoClose } from "react-icons/io5";
-import Loading from "./Loading";
-import backgroundImage from "../assets/wallpaper.png";
 import { MdSend } from "react-icons/md";
+import uploadFile from "../../helpers/uploadFile";
+import Loading from "./Loading";
 import moment from "moment";
 
 const MessagePage = () => {
   const params = useParams();
   const navigate = useNavigate();
-
+  const theme = useSelector((state) => state.user.theme);
   const socketConnection = useSelector(
     (state) => state?.user?.socketConnection
   );
@@ -37,16 +36,15 @@ const MessagePage = () => {
     imageUrl: "",
     videoUrl: "",
   });
-
   const [loading, setLoading] = useState(false);
   const [allMessage, setAllMessage] = useState([]);
+  const [showUserDetails, setShowUserDetails] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+
   const currentMessage = useRef();
 
-  // 🛑 Prevent self-chat via route
   useEffect(() => {
-    if (params.userId === user?._id) {
-      navigate("/"); // redirect to homepage or another page
-    }
+    if (params.userId === user?._id) navigate("/");
   }, [params.userId, user?._id, navigate]);
 
   useEffect(() => {
@@ -58,9 +56,14 @@ const MessagePage = () => {
     }
   }, [allMessage]);
 
-  const handleUploadImageVideoOpen = () => {
-    setOpenImageVideoUpload((prev) => !prev);
-  };
+  useEffect(() => {
+    if (socketConnection && params?.userId !== user?._id) {
+      socketConnection.emit("message-page", params?.userId);
+      socketConnection.emit("seen", params?.userId);
+      socketConnection.on("message-user", (data) => setDataUser(data));
+      socketConnection.on("message", (data) => setAllMessage(data));
+    }
+  }, [socketConnection, params?.userId, user]);
 
   const handleUploadImage = async (e) => {
     const file = e.target.files[0];
@@ -69,10 +72,6 @@ const MessagePage = () => {
     const uploadPhoto = await uploadFile(file);
     setLoading(false);
     setMessage((prev) => ({ ...prev, imageUrl: uploadPhoto.url }));
-  };
-
-  const handleClearUploadImage = () => {
-    setMessage((prev) => ({ ...prev, imageUrl: "" }));
   };
 
   const handleUploadVideo = async (e) => {
@@ -84,38 +83,14 @@ const MessagePage = () => {
     setMessage((prev) => ({ ...prev, videoUrl: uploadVideo.url }));
   };
 
-  const handleClearUploadVideo = () => {
-    setMessage((prev) => ({ ...prev, videoUrl: "" }));
-  };
-
-  useEffect(() => {
-    if (socketConnection && params?.userId !== user?._id) {
-      socketConnection.emit("message-page", params?.userId);
-      socketConnection.emit("seen", params?.userId);
-      socketConnection.on("message-user", (data) => setDataUser(data));
-      socketConnection.on("message", (data) => {
-        console.log("message data", data);
-        setAllMessage(data);
-      });
-    }
-  }, [socketConnection, params?.userId, user]);
-
-  const handleOnChange = (e) => {
-    setMessage((prev) => ({ ...prev, text: e.target.value }));
-  };
-
   const handleSendMessage = (e) => {
     e.preventDefault();
     const trimmedText = message.text.trim();
-
-    // 🛑 Prevent sending to self
     if (user?._id === params?.userId) return;
-
     if (!trimmedText && !message.imageUrl && !message.videoUrl) {
       setMessage({ text: "", imageUrl: "", videoUrl: "" });
       return;
     }
-
     if (socketConnection) {
       socketConnection.emit("new message", {
         sender: user?._id,
@@ -129,193 +104,300 @@ const MessagePage = () => {
     }
   };
 
+  const groupedMessages = allMessage.reduce((groups, msg) => {
+    const date = moment(msg.createdAt).format("YYYY-MM-DD");
+    if (!groups[date]) groups[date] = [];
+    groups[date].push(msg);
+    return groups;
+  }, {});
+
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [params.userId]);
+
   return (
     <div
-      style={{ backgroundImage: `url(${backgroundImage})` }}
-      className="bg-no-repeat bg-cover"
+      className={`min-h-screen flex justify-center items-center p-4 transition-all duration-300 ${
+        theme === "dark"
+          ? "bg-gray-800 border-gray-700 border-l-2"
+          : "bg-gradient-to-tr from-indigo-100 via-purple-100 border-l-2 to-pink-100 text-black"
+      }`}
     >
-      <header className="sticky top-0 h-16 bg-white flex justify-between items-center px-4">
-        <div className="flex items-center gap-4">
-          <Link to={"/"} className="lg:hidden">
-            <FiArrowLeft size={25} />
-          </Link>
-          <div className="mt-2">
+      <div
+        className={`relative flex flex-col w-full max-w-full h-[98vh] rounded-3xl shadow-xl border backdrop-blur-md overflow-hidden ${
+          theme === "dark"
+            ? "bg-gray-800 border-gray-700 text-white"
+            : "bg-white/90 border-purple-200 text-black"
+        }`}
+      >
+        {/* Header */}
+        <header className="flex justify-between items-center px-4 py-3 border-b border-purple-200 relative">
+          <div className="flex items-center gap-3">
+            <Link to="/" className="lg:hidden">
+              <FiArrowLeft size={24} />
+            </Link>
             <Avatar
-              height={50}
-              width={50}
+              height={48}
+              width={48}
               imageUrl={dataUser?.profile_pic}
               name={dataUser?.name}
               userId={dataUser._id}
             />
-          </div>
-          <div>
-            <h3 className="font-semibold text-lg my-0 text-ellipsis line-clamp-1">
-              {dataUser?.name}
-            </h3>
-            <p className="-my-2 text-sm">
-              {dataUser?.online ? (
-                <span className="text-primary">online</span>
-              ) : (
-                <span className="text-slate-500">offline</span>
-              )}
-            </p>
-          </div>
-        </div>
-        <div>
-          <button className="cursor-pointer hover:text-primary">
-            <HiOutlineDotsVertical />
-          </button>
-        </div>
-      </header>
-
-      <section className="h-[calc(100vh-128px)] overflow-x-hidden overflow-y-scroll scrollbar relative bg-slate-200 bg-opacity-30">
-        <div
-          className="flex flex-col gap-2 py-2 ml-3 mr-7"
-          ref={currentMessage}
-        >
-          {allMessage.map((msg, index) => (
-            <div
-              key={index}
-              className={`bg-white p-1 py-2 rounded-md w-fit max-w-[280px] md:max-w-sm lg:max-w-md ${
-                user._id === msg.msgByUserId ? "ml-auto" : ""
-              }`}
-              style={
-                user._id === msg.msgByUserId
-                  ? { backgroundColor: "#d9fdd2" }
-                  : {}
-              }
-            >
-              <div className="w-full">
-                {msg?.imageUrl && (
-                  <img
-                    src={msg?.imageUrl}
-                    className="w-full h-full object-scale-down"
-                  />
+            <div>
+              <h3 className="font-semibold text-lg">{dataUser?.name}</h3>
+              <p className="text-sm">
+                {dataUser?.online ? (
+                  <span className="text-green-500">online</span>
+                ) : (
+                  "offline"
                 )}
-                {msg?.videoUrl && (
-                  <video
-                    src={msg?.videoUrl}
-                    className="w-full h-full object-scale-down"
-                    controls
-                  />
-                )}
-              </div>
-              <p className="px-2">{msg.text}</p>
-              <p className="text-xs ml-auto w-fit">
-                {moment(msg.createdAt).format("hh:mm")}
               </p>
             </div>
-          ))}
-        </div>
-
-        {message.imageUrl && (
-          <div className="w-full h-full sticky bottom-0 bg-slate-700 bg-opacity-30 flex items-center justify-center rounded overflow-hidden">
-            <div
-              className="w-fit p-2 absolute top-0 right-0 cursor-pointer hover:text-red-500"
-              onClick={handleClearUploadImage}
-            >
-              <IoClose size={30} />
-            </div>
-            <div className="bg-white p-3">
-              <img
-                src={message.imageUrl}
-                alt="uploadImage"
-                className="aspect-square w-full h-full max-w-sm m-2 object-scale-down"
-              />
-            </div>
           </div>
-        )}
-
-        {message.videoUrl && (
-          <div className="w-full h-full sticky bottom-0 bg-slate-700 bg-opacity-30 flex items-center justify-center rounded overflow-hidden">
-            <div
-              className="w-fit p-2 absolute top-0 right-0 cursor-pointer hover:text-red-500"
-              onClick={handleClearUploadVideo}
-            >
-              <IoClose size={30} />
-            </div>
-            <div className="bg-white p-3">
-              <video
-                src={message.videoUrl}
-                className="aspect-square w-full h-full max-w-sm m-2 object-scale-down"
-                controls
-                muted
-                autoPlay
-              />
-            </div>
+          <div className="relative">
+            <button onClick={() => setShowDropdown((prev) => !prev)}>
+              <HiOutlineDotsVertical size={20} />
+            </button>
+            {showDropdown && (
+              <div
+                className={`absolute right-0 mt-2 w-40 z-50 shadow-md rounded-lg ${
+                  theme === "dark" ? "bg-gray-700" : "bg-purple-200"
+                }`}
+              >
+                <button
+                  onClick={() => {
+                    setShowUserDetails(true);
+                    setShowDropdown(false);
+                  }}
+                  className="w-full text-left px-4 py-2 hover:bg-purple-100 dark:hover:bg-gray-600"
+                >
+                  View User Details
+                </button>
+              </div>
+            )}
           </div>
-        )}
+        </header>
 
-        {loading && (
-          <div className="w-full h-full sticky bottom-0 flex justify-center items-center">
-            <Loading size={50} />
-          </div>
-        )}
-      </section>
-
-      <section className="h-16 bg-slate-300 flex items-center px-2">
-        <div className="relative">
-          <button
-            onClick={handleUploadImageVideoOpen}
-            className="flex justify-center items-center w-11 h-11 rounded-full hover:bg-primary hover:text-white transition-all duration-200 ease-in-out hover:scale-105"
+        {/* User Detail Side Panel */}
+        {showUserDetails && (
+          <div
+            className={`absolute top-0 right-0 h-full w-80 z-50 transition-all shadow-xl border-l ${
+              theme === "dark"
+                ? "bg-gray-900 border-gray-700 text-white"
+                : "bg-white border-gray-300 text-black"
+            }`}
           >
-            <IoMdAdd size={25} />
-          </button>
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="text-lg font-semibold">User Details</h2>
+              <button
+                onClick={() => setShowUserDetails(false)}
+                className="text-red-500"
+              >
+                <IoClose size={24} />
+              </button>
+            </div>
+            <div className="flex flex-col items-center gap-4 p-4">
+              <img
+                src={dataUser?.profile_pic}
+                alt="Profile"
+                className="w-32 h-32 rounded-full object-cover shadow-md"
+              />
+              <h3 className="text-xl font-bold">{dataUser?.name}</h3>
+              <p className="text-sm text-gray-500">{dataUser?.email}</p>
+              <p
+                className={`text-sm font-medium ${
+                  dataUser?.online ? "text-green-500" : "text-gray-400"
+                }`}
+              >
+                {dataUser?.online ? "Online" : "Offline"}
+              </p>
+            </div>
+          </div>
+        )}
 
-          {openImageVideoUpload && (
-            <div className="bg-white shadow rounded absolute bottom-14 w-36 p-2">
-              <form>
+        {/* Chat Body */}
+        <section
+          className="flex-1 overflow-y-auto px-4 py-3"
+          ref={currentMessage}
+        >
+          {Object.entries(groupedMessages).map(([date, messages]) => (
+            <div key={date}>
+              <div className="flex justify-center my-2">
+                <span
+                  className={`text-sm px-4 py-1 rounded-full ${
+                    theme === "dark"
+                      ? "bg-gray-700 text-white"
+                      : "bg-purple-100 text-purple-700"
+                  }`}
+                >
+                  {moment(date).calendar(null, {
+                    sameDay: "[Today]",
+                    lastDay: "[Yesterday]",
+                    lastWeek: "dddd",
+                    sameElse: "MMMM D, YYYY",
+                  })}
+                </span>
+              </div>
+              {messages.map((msg, i) => (
+                <div
+                  key={i}
+                  className={`rounded-xl px-4 py-2 w-fit max-w-[45%] mb-2 shadow ${
+                    user._id === msg.msgByUserId
+                      ? theme === "dark"
+                        ? "ml-auto bg-gray-200 text-black"
+                        : "ml-auto bg-purple-600 text-white"
+                      : theme === "dark"
+                      ? "bg-gray-700"
+                      : "bg-purple-100 text-black"
+                  }`}
+                >
+                  {msg.imageUrl && (
+                    <img
+                      src={msg.imageUrl}
+                      alt="shared-img"
+                      className="max-w-xs max-h-60 object-cover rounded-lg mb-2 cursor-pointer"
+                    />
+                  )}
+                  {msg.videoUrl && (
+                    <video
+                      src={msg.videoUrl}
+                      className="max-w-xs max-h-60 object-cover rounded-lg mb-2  cursor-pointer"
+                      controls
+                    />
+                  )}
+                  <p>{msg.text}</p>
+                  <p className="text-xs text-right opacity-70 mt-1">
+                    {moment(msg.createdAt).format("HH:mm")}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ))}
+          {loading && (
+            <div className="text-center py-3">
+              <Loading size={40} />
+            </div>
+          )}
+        </section>
+
+        {/* Media Preview */}
+        {(message.imageUrl || message.videoUrl) && (
+          <div className="w-fit h-fit flex items-center justify-center z-[1000] px-4 py-4 overflow-y-auto">
+            <div className="relative bg-white rounded-xl p-4">
+              <button
+                onClick={
+                  message.imageUrl
+                    ? () => setMessage((prev) => ({ ...prev, imageUrl: "" }))
+                    : () => setMessage((prev) => ({ ...prev, videoUrl: "" }))
+                }
+                className="absolute top-2 right-2 text-red-600"
+              >
+                <IoClose size={24} />
+              </button>
+              {message.imageUrl && (
+                <img
+                  src={message.imageUrl}
+                  className="max-w-md rounded-lg"
+                  alt="Preview"
+                />
+              )}
+              {message.videoUrl && (
+                <video
+                  src={message.videoUrl}
+                  className="max-w-md rounded-lg"
+                  controls
+                  autoPlay
+                  muted
+                />
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        <footer className="border-t px-4 py-3 flex items-center gap-3">
+          <div className="relative">
+            <button
+              onClick={() => setOpenImageVideoUpload((prev) => !prev)}
+              className={`p-2 rounded-full ${
+                theme === "dark"
+                  ? "bg-gray-700 text-white"
+                  : "bg-purple-100 text-purple-700"
+              } hover:scale-105 transition`}
+            >
+              <IoMdAdd size={20} />
+            </button>
+            {openImageVideoUpload && (
+              <div
+                className={`absolute bottom-14 left-0 rounded-lg shadow-md w-36 py-2 ${
+                  theme === "dark" ? "bg-gray-800 outline" : "bg-white outline"
+                }`}
+              >
                 <label
                   htmlFor="uploadImage"
-                  className="flex items-center gap-3 p-2 px-3 hover:bg-slate-200 cursor-pointer"
+                  className="flex items-center px-3 py-2 hover:bg-purple-200 dark:hover:text-black cursor-pointer gap-2"
                 >
-                  <div className="text-primary">
-                    <FaImage size={18} />
-                  </div>
-                  <p>Image</p>
+                  <FaImage className="text-purple-600" />
+                  <span>Image</span>
                 </label>
+                <hr />
                 <label
                   htmlFor="uploadVideo"
-                  className="flex items-center gap-3 p-2 px-3 hover:bg-slate-200 cursor-pointer"
+                  className="flex items-center px-3 py-2 hover:bg-purple-200 dark:hover:text-black cursor-pointer gap-2"
                 >
-                  <div className="text-purple-500">
-                    <FaVideo size={18} />
-                  </div>
-                  <p>Video</p>
+                  <FaVideo className="text-purple-600" />
+                  <span>Video</span>
                 </label>
                 <input
                   type="file"
                   id="uploadImage"
-                  onChange={handleUploadImage}
+                  accept="image/*"
                   className="hidden"
+                  onChange={handleUploadImage}
                 />
                 <input
                   type="file"
                   id="uploadVideo"
-                  onChange={handleUploadVideo}
+                  accept="video/*"
                   className="hidden"
+                  onChange={handleUploadVideo}
                 />
-              </form>
-            </div>
-          )}
-        </div>
+              </div>
+            )}
+          </div>
 
-        <form
-          onSubmit={handleSendMessage}
-          className="h-3/5 w-full px-2 flex gap-2"
-        >
-          <input
-            type="text"
-            className="py-1 px-4 outline-none w-full h-full rounded-full"
-            placeholder="type your message"
-            value={message.text}
-            onChange={handleOnChange}
-          />
-          <button className="flex justify-center items-center w-11 h-11 rounded-full text-primary hover:bg-secondary hover:text-white transition-all duration-200 ease-in-out hover:scale-105">
-            <MdSend size={30} />
-          </button>
-        </form>
-      </section>
+          <form
+            onSubmit={handleSendMessage}
+            className="flex-1 flex items-center gap-2"
+          >
+            <input
+              ref={inputRef}
+              type="text"
+              value={message.text}
+              onChange={(e) =>
+                setMessage((prev) => ({ ...prev, text: e.target.value }))
+              }
+              placeholder="Type a message..."
+              className={`flex-1 px-4 py-2 rounded-full border focus:outline-none ${
+                theme === "dark"
+                  ? "bg-gray-700 text-white border-gray-600"
+                  : "bg-white border-purple-300"
+              }`}
+            />
+
+            <button
+              type="submit"
+              className="p-2 bg-purple-600 text-white rounded-full hover:bg-purple-700"
+            >
+              <MdSend size={22} />
+            </button>
+          </form>
+        </footer>
+      </div>
     </div>
   );
 };
