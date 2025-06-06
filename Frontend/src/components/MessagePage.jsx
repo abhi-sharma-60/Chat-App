@@ -57,13 +57,32 @@ const MessagePage = () => {
   }, [allMessage]);
 
   useEffect(() => {
-    if (socketConnection && params?.userId !== user?._id) {
-      socketConnection.emit("message-page", params?.userId);
-      socketConnection.emit("seen", params?.userId);
-      socketConnection.on("message-user", (data) => setDataUser(data));
-      socketConnection.on("message", (data) => setAllMessage(data));
-    }
-  }, [socketConnection, params?.userId, user]);
+  if (socketConnection && params?.userId !== user?._id) {
+    socketConnection.emit("message-page", params?.userId);
+    socketConnection.emit("seen", params?.userId);
+
+    const handleUserData = (data) => setDataUser(data);
+    const handleIncomingMessages = (data) => {
+      if (data.length > 0 && (
+        data[0].msgByUserId === params.userId || data[0].receiver === params.userId
+      )) {
+        setAllMessage(data);
+      } else {
+        // Message is from another chat, don't update this page
+        // Instead, maybe dispatch to notification or global store
+      }
+    };
+
+    socketConnection.on("message-user", handleUserData);
+    socketConnection.on("message", handleIncomingMessages);
+
+    // Cleanup listeners on unmount or params change
+    return () => {
+      socketConnection.off("message-user", handleUserData);
+      socketConnection.off("message", handleIncomingMessages);
+    };
+  }
+}, [socketConnection, params?.userId, user]);
 
   const handleUploadImage = async (e) => {
     const file = e.target.files[0];
