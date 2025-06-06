@@ -4,43 +4,43 @@ import uploadFile from "../../helpers/uploadFile";
 import Divider from "./Divider";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setUser } from "../redux/userSlice";
 
 const EditUserDetails = ({ onClose, user }) => {
   const [data, setData] = useState({
-    name: user?.name,
-    profile_pic: user?.profile_pic,
+    name: user?.name || "",
+    profile_pic: user?.profile_pic || "",
   });
   const uploadPhotoRef = useRef();
   const dispatch = useDispatch();
+  const theme = useSelector((state) => state.user.theme);
+
   useEffect(() => {
-    setData((prev) => {
-      return {
-        ...prev,
-        ...user,
-      };
-    });
+    setData((prev) => ({
+      ...prev,
+      ...user,
+    }));
   }, [user]);
+
   const handleOnChange = (e) => {
     const { name, value } = e.target;
-    setData((prev) => {
-      return {
-        ...prev,
-        [name]: value,
-      };
-    });
+    setData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
+
   const handleUploadPhoto = async (e) => {
     const file = e.target.files[0];
+    if (!file) return;
     const uploadPhoto = await uploadFile(file);
-    setData((prev) => {
-      return {
-        ...prev,
-        profile_pic: uploadPhoto?.url,
-      };
-    });
+    setData((prev) => ({
+      ...prev,
+      profile_pic: uploadPhoto?.url,
+    }));
   };
+
   const handleOpenUploadPhoto = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -55,82 +55,100 @@ const EditUserDetails = ({ onClose, user }) => {
     try {
       const payload = {
         name: data.name,
-        profile_pic: data.profile_pic
+        profile_pic: data.profile_pic,
       };
-      const response = await axios({
-        method: "post",
-        data: payload,
-        url: URL,
-        withCredentials: true, // ✅ THIS IS THE FIX
+
+      const response = await axios.post(URL, payload, {
+        withCredentials: true,
       });
 
-      toast.success(response?.data?.message);
+      toast.success(response?.data?.message || "Profile updated!");
       if (response.data.success) {
         dispatch(setUser(response?.data?.data));
-        onClose(); // 👈 CLOSE MODAL HERE
+        onClose();
       }
-      console.log(response);
     } catch (error) {
-      toast.error(error?.response?.data?.message);
+      toast.error(error?.response?.data?.message || "Something went wrong");
     }
-
-    // console.log(data);
   };
 
+  const isDark = theme === "dark";
+
   return (
-    <div className="fixed top-0 bottom-0 right-0 left-0 bg-gray-700 bg-opacity-40 flex justify-center items-center z-10">
-      <div className="bg-white p-4 py-6 m-1 rounded w-full max-w-sm">
-        <h2 className="font-semibold">Profile Details</h2>
-        <p className="text-sm ">Edit User Details</p>
-        <form className="grid gap-3 mt-3" onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-1">
-            <label htmlFor="name">Name: </label>
+    <div className="fixed inset-0 z-10 flex items-center justify-center bg-black/50">
+      <div
+        className={`p-6 w-full max-w-sm mx-2 rounded-2xl shadow-xl transition-all animate-fade-in-up ${
+          isDark ? "bg-zinc-900 text-white" : "bg-white text-zinc-800"
+        }`}
+      >
+        <h2 className="text-xl font-bold mb-1">Edit Profile</h2>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">
+          Update your name and profile photo.
+        </p>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex flex-col">
+            <label htmlFor="name" className="text-sm font-medium mb-1">
+              Name
+            </label>
             <input
               type="text"
-              name="name"
               id="name"
+              name="name"
               value={data.name}
               onChange={handleOnChange}
-              className="w-full py-1 px-2 focus:outline-primary border"
+              className={`rounded-lg px-3 py-2 text-sm border ${
+                isDark
+                  ? "bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400"
+                  : "bg-white border-zinc-300 text-black placeholder-zinc-500"
+              } focus:outline-none focus:ring-2 focus:ring-primary`}
+              placeholder="Your name"
             />
           </div>
-          <div>
-            <div>Photo:</div>
-            <div className="my-1 flex items-center gap-4">
+
+          <div className="flex flex-col">
+            <label className="text-sm font-medium mb-1">Profile Photo</label>
+            <div className="flex items-center gap-4">
               <Avatar
-                width={40}
-                height={40}
-                imageUrl={data.profile_pic}
+                width={48}
+                height={48}
+                imageUrl={data?.profile_pic}
                 name={data?.name}
               />
-              <label htmlFor="profile_pic">
-                <button
-                  className="font-semibold"
-                  onClick={handleOpenUploadPhoto}
-                >
-                  Change Photo
-                </button>
-                <input
-                  type="file"
-                  id="profile_pic"
-                  className="hidden"
-                  onChange={handleUploadPhoto}
-                  ref={uploadPhotoRef}
-                />
-              </label>
+              <button
+                type="button"
+                onClick={handleOpenUploadPhoto}
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                Change Photo
+              </button>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleUploadPhoto}
+                ref={uploadPhotoRef}
+                className="hidden"
+              />
             </div>
           </div>
+
           <Divider />
-          <div className="flex gap-4 w-fit ml-auto ">
+
+          <div className="flex justify-end gap-3">
             <button
+              type="button"
               onClick={onClose}
-              className="border-primary text-black border px-4 py-1 rounded hover:bg-primary hover:text-white"
+              className={`px-4 py-1.5 rounded-md text-sm border ${
+                isDark
+                  ? "border-zinc-600 text-white hover:bg-zinc-800"
+                  : "border-zinc-300 text-black hover:bg-zinc-100"
+              }`}
             >
               Cancel
             </button>
             <button
-              onClick={handleSubmit}
-              className="border-primary bg-white text-black border px-4 py-1 rounded hover:bg-primary hover:text-white"
+              type="submit"
+              className="px-4 py-1.5 rounded-md text-sm bg-primary text-white hover:bg-primary-dark"
             >
               Save
             </button>
@@ -140,4 +158,5 @@ const EditUserDetails = ({ onClose, user }) => {
     </div>
   );
 };
+
 export default React.memo(EditUserDetails);

@@ -8,7 +8,7 @@ const initialState = {
   token: "",
   onlineUser: [],
   socketConnection: null,
-  theme: "light", // Add theme state
+  theme: localStorage.getItem("theme") || "light", // ✅ Load persisted theme
   college: "",
   branch: "",
   course: "",
@@ -36,6 +36,7 @@ export const userSlice = createSlice({
     },
     toggleTheme: (state) => {
       state.theme = state.theme === "light" ? "dark" : "light";
+      localStorage.setItem("theme", state.theme); // ✅ Persist theme
     },
     logout: (state) => {
       state._id = "";
@@ -57,15 +58,15 @@ export const userSlice = createSlice({
       state.socketConnection = action.payload;
     },
   },
-}); 
+});
 
-export const { 
-  setUser, 
-  setToken, 
-  logout, 
-  setOnlineUser, 
+export const {
+  setUser,
+  setToken,
+  logout,
+  setOnlineUser,
   setSocketConnection,
-  toggleTheme 
+  toggleTheme,
 } = userSlice.actions;
 
 export default userSlice.reducer;

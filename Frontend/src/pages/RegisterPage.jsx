@@ -79,7 +79,7 @@ const RegisterPage = () => {
         <form className="grid gap-4" onSubmit={handleSubmit}>
           <div className="flex flex-col gap-1">
             <label htmlFor="name" className="font-medium">Name</label>
-            <input
+            <select
               type="text"
               id="name"
               name="name"
@@ -88,7 +88,13 @@ const RegisterPage = () => {
               value={data.name}
               onChange={handleOnchange}
               required
-            />
+            >
+              <option value="">Select Year</option>
+              <option value="1">1st Year</option>
+              <option value="2">2nd Year</option>
+              <option value="3">3rd Year</option>
+              <option value="4">4th Year</option>
+            </select>
           </div>
 
           <div className="flex flex-col gap-1">
@@ -204,7 +210,7 @@ const RegisterPage = () => {
                 </p>
                 {uploadPhoto?.name && (
                   <button
-                    className="text-lg ml-4 hover:text-red-600"
+                    className="text-lg text-gray-500 hover:text-red-600"
                     onClick={handleClearUploadPhoto}
                   >
                     <IoClose />

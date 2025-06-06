@@ -17,6 +17,10 @@ const SearchUser = ({ onClose }) => {
   const modalRef = useRef(null);
 
   const handleSearchUser = async () => {
+    if (!search.trim()) {
+      setSearchUser([]);
+      return;
+    }
     const URL = `${import.meta.env.VITE_BACKEND_URL}/api/search-user`;
     try {
       setLoading(true);
@@ -24,10 +28,10 @@ const SearchUser = ({ onClose }) => {
         search: search,
         searchType: searchType
       });
-      setLoading(false);
-      setSearchUser(response.data.data);
+      setSearchUser(response.data.data || []);
     } catch (error) {
       toast.error(error?.response?.data?.message || "Something went wrong");
+    } finally {
       setLoading(false);
     }
   };
@@ -43,9 +47,7 @@ const SearchUser = ({ onClose }) => {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [onClose]);
 
   return (
