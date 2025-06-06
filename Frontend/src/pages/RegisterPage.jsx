@@ -233,13 +233,14 @@ const RegisterPage = () => {
 
           {/* Profile Picture */}
           <div className="flex flex-col gap-1">
-            <label htmlFor="profile_pic" className="font-semibold text-purple-600">
+            <label
+              htmlFor="profile_pic"
+              className="font-semibold text-purple-600"
+            >
               Profile Picture
               <div
                 className="mt-1 h-14 bg-purple-50 flex justify-between items-center border border-purple-300 rounded-lg px-4 cursor-pointer hover:border-purple-500 transition"
-                onClick={() =>
-                  document.getElementById("profile_pic").click()
-                }
+                onClick={() => document.getElementById("profile_pic").click()}
               >
                 <p className="text-sm max-w-[280px] text-ellipsis overflow-hidden whitespace-nowrap">
                   {uploadPhoto?.name

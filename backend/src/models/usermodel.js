@@ -27,10 +27,24 @@ const userSchema = new mongoose.Schema({
     refreshToken: {
         type: String
     },
+    status: {
+        type: String,
+        enum: ['ready', 'busy'],
+        default: 'ready'
+    },
     profile_pic : {
         type : String,
         default : ""
-    }
+    },
+    connections: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    blockedUsers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+    }]
+      
 },
 {timestamps: true});
 
