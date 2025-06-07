@@ -12,6 +12,18 @@ const SearchUser = ({ onClose }) => {
   const [search, setSearch] = useState("");
   const [searchType, setSearchType] = useState("name");
 
+  const [filters, setFilters] = useState({
+  name: "",
+  email: "",
+  rating: 0,
+  languages: [],
+  roles: [],
+  tools: "",
+  college: "",
+  branch: "",
+});
+
+
   const user = useSelector((state) => state.user);
   const theme = useSelector((state) => state.user.theme);
   const modalRef = useRef(null);
@@ -20,10 +32,11 @@ const SearchUser = ({ onClose }) => {
     const URL = `${import.meta.env.VITE_BACKEND_URL}/api/search-user`;
     try {
       setLoading(true);
-      const response = await axios.post(URL, {
-        search: search,
-        searchType: searchType,
-      });
+    const response = await axios.post(URL, filters);
+    setSearchUser(response.data.data || []);
+    console.log(searchUser)
+    setLoading(false);
+    console.log(filters)
 
       let results = response.data.data || [];
 
@@ -78,12 +91,13 @@ const SearchUser = ({ onClose }) => {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center px-2 ${
-        theme === "dark"
-          ? "bg-black/60 backdrop-blur-sm"
-          : "bg-black/40 backdrop-blur-sm"
-      }`}
-    >
+  className={`fixed inset-0 z-50 overflow-y-auto flex items-start justify-center px-2 py-8 ${
+    theme === "dark"
+      ? "bg-black/60 backdrop-blur-sm"
+      : "bg-black/40 backdrop-blur-sm"
+  }`}
+>
+
       <div
         ref={modalRef}
         className={`w-full max-w-2xl rounded-2xl shadow-xl border p-6 relative
@@ -113,38 +127,133 @@ const SearchUser = ({ onClose }) => {
           Search Users
         </h2>
 
-        {/* Search Bar */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+
+  {/* Name */}
+  <div>
+    <label className="block mb-1 font-semibold">Name</label>
+    <input
+      type="text"
+      className="w-full p-2 rounded-lg border"
+      value={filters.name}
+      onChange={(e) => setFilters({ ...filters, name: e.target.value })}
+    />
+  </div>
+
+  {/* Email */}
+  <div>
+    <label className="block mb-1 font-semibold">Email</label>
+    <input
+      type="text"
+      className="w-full p-2 rounded-lg border"
+      value={filters.email}
+      onChange={(e) => setFilters({ ...filters, email: e.target.value })}
+    />
+  </div>
+
+  {/* Minimum Rating */}
+  <div>
+    <label className="block mb-1 font-semibold">Minimum Rating</label>
+    <input
+      type="range"
+      min="0"
+      max="5"
+      step="0.1"
+      value={filters.rating}
+      onChange={(e) => setFilters({ ...filters, rating: parseFloat(e.target.value) })}
+    />
+    <p className="text-sm mt-1">Rating: {filters.rating}</p>
+  </div>
+
+  {/* College */}
+  <div>
+    <label className="block mb-1 font-semibold">College</label>
+    <input
+      type="text"
+      className="w-full p-2 rounded-lg border"
+      value={filters.college}
+      onChange={(e) => setFilters({ ...filters, college: e.target.value })}
+    />
+  </div>
+
+  {/* Branch */}
+  <div>
+    <label className="block mb-1 font-semibold">Branch</label>
+    <input
+      type="text"
+      className="w-full p-2 rounded-lg border"
+      value={filters.branch}
+      onChange={(e) => setFilters({ ...filters, branch: e.target.value })}
+    />
+  </div>
+
+  {/* Languages */}
+  <div>
+    <label className="block mb-1 font-semibold">Languages</label>
+    <div className="grid grid-cols-2 gap-x-4">
+      {["C", "C++", "Python", "Java", "Kotlin", "JavaScript", "Golang"].map(lang => (
+        <label key={lang} className="text-sm">
           <input
-            type="text"
-            placeholder="Search by name, branch, college..."
-            className={`flex-1 py-2 px-4 rounded-lg border focus:outline-none focus:ring-2
-              ${
-                theme === "dark"
-                  ? "bg-gray-800 border-gray-700 text-white focus:ring-purple-500"
-                  : "bg-white border-purple-300 text-purple-900 focus:ring-purple-500"
-              }
-            `}
-            onChange={(e) => setSearch(e.target.value)}
-            value={search}
-          />
-          <select
-            value={searchType}
-            onChange={(e) => setSearchType(e.target.value)}
-            className={`py-2 px-4 rounded-lg border focus:outline-none focus:ring-2
-              ${
-                theme === "dark"
-                  ? "bg-gray-800 border-gray-700 text-white focus:ring-purple-500"
-                  : "bg-white border-purple-300 text-purple-900 focus:ring-purple-500"
-              }
-            `}
-          >
-            <option value="name">Name</option>
-            <option value="college">College</option>
-            <option value="skills">Skills</option>
-            <option value="branch">Branch</option>
-          </select>
-        </div>
+            type="checkbox"
+            checked={filters.languages.includes(lang)}
+            onChange={() =>
+              setFilters((prev) => ({
+                ...prev,
+                languages: prev.languages.includes(lang)
+                  ? prev.languages.filter(l => l !== lang)
+                  : [...prev.languages, lang],
+              }))
+            }
+          />{" "}
+          {lang}
+        </label>
+      ))}
+    </div>
+  </div>
+
+  {/* Roles */}
+  <div>
+    <label className="block mb-1 font-semibold">Roles</label>
+    <div className="grid grid-cols-2 gap-x-4">
+      {["Frontend", "Backend", "Web", "Mobile", "Full Stack"].map(role => (
+        <label key={role} className="text-sm">
+          <input
+            type="checkbox"
+            checked={filters.roles.includes(role)}
+            onChange={() =>
+              setFilters((prev) => ({
+                ...prev,
+                roles: prev.roles.includes(role)
+                  ? prev.roles.filter(r => r !== role)
+                  : [...prev.roles, role],
+              }))
+            }
+          />{" "}
+          {role}
+        </label>
+      ))}
+    </div>
+  </div>
+
+  {/* Tools */}
+  <div className="md:col-span-2">
+    <label className="block mb-1 font-semibold">Tools (comma-separated)</label>
+    <input
+      type="text"
+      className="w-full p-2 rounded-lg border"
+      value={filters.tools}
+      onChange={(e) => setFilters({ ...filters, tools: e.target.value })}
+    />
+  </div>
+</div>
+
+{/* Button */}
+<button
+  onClick={handleSearchUser}
+  className="mt-2 px-6 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700"
+>
+  Apply Filters
+</button>
 
         {/* Search Results */}
         <div className="max-h-[65vh] overflow-y-auto">
@@ -164,12 +273,13 @@ const SearchUser = ({ onClose }) => {
             </p>
           )}
 
-          {!loading &&
-            searchUser
-              .filter((u) => u._id !== user?._id)
-              .map((user) => (
-                <UserSearchCard key={user._id} user={user} onClose={onClose} />
-              ))}
+{!loading &&
+  searchUser
+    .filter((u) => u.user && u.user._id !== user?._id)
+    .map((u) => (
+      <UserSearchCard key={u.user._id} user={u.user} onClose={onClose} />
+    ))}
+
         </div>
       </div>
     </div>

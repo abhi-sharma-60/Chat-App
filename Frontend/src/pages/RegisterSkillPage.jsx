@@ -89,9 +89,9 @@ const RegisterSkillPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-indigo-100 via-purple-100 to-pink-100 p-6">
-      <div className="bg-white/90 backdrop-blur-md max-w-md w-full rounded-3xl shadow-xl p-8 border border-purple-200">
-        <h3 className="text-3xl font-extrabold text-center text-purple-700 mb-8">
+    <div className="h-screen overflow-y-auto bg-gradient-to-tr from-indigo-100 via-purple-100 to-pink-100 p-6">
+  <div className="max-w-md mx-auto my-8 bg-white/90 backdrop-blur-md rounded-3xl shadow-xl p-8 border border-purple-200">
+ <h3 className="text-3xl font-extrabold text-center text-purple-700 mb-8">
           Register Your Skills 🚀
         </h3>
         <form className="grid gap-5" onSubmit={handleSubmit}>

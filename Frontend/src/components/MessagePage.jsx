@@ -12,6 +12,7 @@ import { MdSend } from "react-icons/md";
 import uploadFile from "../../helpers/uploadFile";
 import Loading from "./Loading";
 import moment from "moment";
+import useAuthCheck from "../helper/useAuthCheck";
 
 const MessagePage = () => {
   const params = useParams();
@@ -29,6 +30,10 @@ const MessagePage = () => {
     online: false,
     _id: "",
   });
+
+  // useEffect(() => {
+  //   if(!user) useAuthCheck(user);
+  // },[])
 
   const [openImageVideoUpload, setOpenImageVideoUpload] = useState(false);
   const [message, setMessage] = useState({
