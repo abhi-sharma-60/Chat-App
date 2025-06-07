@@ -14,7 +14,7 @@ const RegisterPage = () => {
     college: "",
     branch: "",
     course: "",
-    skills: "",
+   // skills: "",
     studyYear: "",
   });
 
@@ -69,7 +69,7 @@ const RegisterPage = () => {
           college: "",
           branch: "",
           course: "",
-          skills: "",
+         // skills: "",
           studyYear: "",
         });
         setUploadPhoto(null);
@@ -97,7 +97,7 @@ const RegisterPage = () => {
               id="name"
               name="name"
               placeholder="Enter your name"
-              className="bg-purple-50 px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
+              className="bg-purple-50 text-black px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
               value={data.name}
               onChange={handleOnchange}
               required
@@ -114,7 +114,7 @@ const RegisterPage = () => {
               id="email"
               name="email"
               placeholder="Enter your email"
-              className="bg-purple-50 px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
+              className="bg-purple-50 text-black px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
               value={data.email}
               onChange={handleOnchange}
               required
@@ -131,7 +131,7 @@ const RegisterPage = () => {
               id="password"
               name="password"
               placeholder="Enter your password"
-              className="bg-purple-50 px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
+              className="bg-purple-50  text-black px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
               value={data.password}
               onChange={handleOnchange}
               required
@@ -148,7 +148,7 @@ const RegisterPage = () => {
               id="college"
               name="college"
               placeholder="Enter your college name"
-              className="bg-purple-50 px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
+              className="bg-purple-50  text-black px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
               value={data.college}
               onChange={handleOnchange}
               required
@@ -166,7 +166,7 @@ const RegisterPage = () => {
                 id="branch"
                 name="branch"
                 placeholder="Your branch"
-                className="bg-purple-50 px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
+                className="bg-purple-50 text-black  px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
                 value={data.branch}
                 onChange={handleOnchange}
                 required
@@ -182,7 +182,7 @@ const RegisterPage = () => {
                 id="course"
                 name="course"
                 placeholder="Your course"
-                className="bg-purple-50 px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
+                className="bg-purple-50  text-black px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
                 value={data.course}
                 onChange={handleOnchange}
                 required
@@ -201,7 +201,7 @@ const RegisterPage = () => {
             <select
               id="studyYear"
               name="studyYear"
-              className="bg-purple-50 px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
+              className="bg-purple-50 text-black  px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
               value={data.studyYear}
               onChange={handleOnchange}
               required
@@ -214,7 +214,7 @@ const RegisterPage = () => {
             </select>
           </div>
 
-          {/* Skills */}
+          {/* Skills 
           <div className="flex flex-col gap-1">
             <label htmlFor="skills" className="font-semibold text-purple-600">
               Skills (comma-separated)
@@ -230,6 +230,8 @@ const RegisterPage = () => {
               required
             />
           </div>
+            */}
+
 
           {/* Profile Picture */}
           <div className="flex flex-col gap-1">

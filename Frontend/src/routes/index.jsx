@@ -7,6 +7,7 @@ import MessagePage from "../components/MessagePage";
 import RegisterPage from "../pages/RegisterPage";
 import AuthLayouts from "../layout";
 import ForgotPassword from "../pages/ForgotPassword";
+import RegisterSkillPage from "../pages/RegisterSkillPage";
 
 const router = createBrowserRouter([
   {
@@ -18,6 +19,14 @@ const router = createBrowserRouter([
         element: (
           <AuthLayouts>
             <RegisterPage />
+          </AuthLayouts>
+        ),
+      },
+      {
+        path: "register-skill",
+        element: (
+          <AuthLayouts>
+            <RegisterSkillPage />
           </AuthLayouts>
         ),
       },

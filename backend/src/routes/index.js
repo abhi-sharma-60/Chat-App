@@ -6,6 +6,7 @@ import userDetails from "../controllers/userDetails.js"
 import logout from "../controllers/logout.js"
 import updateUserDetails from "../controllers/updateUserDetails.js"
 import searchUser from "../controllers/searchUser.js"
+import updateSkills from "../controllers/updateSkills.js"
 
 const router = express.Router()
 
@@ -16,6 +17,7 @@ router.get("/user-details",userDetails)
 router.get("/logout",logout)
 router.post("/update-user",updateUserDetails)
 router.post("/search-user",searchUser)
+router.post("/update-skills",updateSkills)
 
 
 export default router

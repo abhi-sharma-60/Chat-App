@@ -1,5 +1,5 @@
 // controllers/updateSkills.js
-import Skill from "../models/Skill.js";
+import Skill from "../models/skillmodel.js";
 import getUserDetailsFromToken from "../helpers/getUserDetailsFromToken.js";
 
 const updateSkills = async (req, res) => {
@@ -12,14 +12,32 @@ const updateSkills = async (req, res) => {
         message: "User not logged in",
       });
     }
-
-    const user = await getUserDetailsFromToken(token);
+    console.log(token)
 
     const { languages, roles, description, github } = req.body;
 
+
+    const userData = await getUserDetailsFromToken(token);
+    const exist = await Skill.findOne({userData})
+    console.log(userData)
+    console.log(exist)
+    const userId = userData._id
+
+    if(!exist){
+      const skills = new Skill({ languages, roles, description, github, user : userId})
+      await skills.save()
+
+
+      return res.status(200).json({
+        success: true,
+        message: "Skills registered successfully",
+        data: skills,
+      });
+    }
+    
     // Find and update the skill by user ID
     const updatedSkill = await Skill.findOneAndUpdate(
-      { user: user._id },
+      { user: exist._id },
       {
         ...(languages && { languages }),
         ...(roles && { roles }),

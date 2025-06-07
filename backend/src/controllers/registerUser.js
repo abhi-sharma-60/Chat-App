@@ -2,7 +2,7 @@ import {UserModel} from "../models/usermodel.js"
 
 async function registerUser(request,response){
     try {
-        const { name, email , password, profile_pic, googleId } = request.body
+        const { name, email , password, profile_pic, branch, course, studyYear, college } = request.body
 
         const checkEmail = await UserModel.findOne({ email })
        // const checkGoogleId = await UserModel.findOne({ googleId }) 
@@ -19,7 +19,10 @@ async function registerUser(request,response){
             email,
             profile_pic,
             password,
-            //googleId
+            branch,
+            course,
+            studyYear,
+            college
         }
 
         const user = new UserModel(payload);

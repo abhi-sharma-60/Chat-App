@@ -8,6 +8,22 @@ const userSchema = new mongoose.Schema({
         required: [true,"Username required"],
         trim: true
     },
+    college: {
+        type: String,
+        trim: true
+    },
+    branch: {
+        type: String,
+        trim: true
+    },
+    course: {
+        type: String,
+        trim: true
+    },
+    studyYear: {
+        type: Number,
+        trim: true
+    },
     email: {
         type: String,
         required: [true,"E-mail required"],
