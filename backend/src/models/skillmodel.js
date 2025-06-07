@@ -9,6 +9,10 @@ const skillSchema = new mongoose.Schema({
     type: [String],
     required: true,
   },
+  tools:{
+    type: [String],
+    set: (arr) => arr.map(str => str.toLowerCase())
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

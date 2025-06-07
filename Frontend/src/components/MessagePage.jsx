@@ -221,7 +221,7 @@ const MessagePage = () => {
 
         {/* Chat Body */}
         <section
-          className="flex-1 overflow-y-auto px-4 py-3"
+          className="flex-1 overflow-y-auto px-4 py-3 overflow-x-hidden"
           ref={currentMessage}
         >
           {Object.entries(groupedMessages).map(([date, messages]) => (
@@ -269,7 +269,8 @@ const MessagePage = () => {
                       controls
                     />
                   )}
-                  <p>{msg.text}</p>
+                  <p className="break-words whitespace-pre-wrap">{msg.text}</p>
+
                   <p className="text-xs text-right opacity-70 mt-1">
                     {moment(msg.createdAt).format("HH:mm")}
                   </p>

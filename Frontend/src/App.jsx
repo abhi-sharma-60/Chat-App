@@ -14,16 +14,16 @@ function App() {
   }, [theme]);
 
   return (
-    <>
+    <div className="h-screen overflow-hidden">
       <Toaster />
       <main
         className={`min-h-screen ${
           theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"
         }`}
       >
-        <Outlet />
+        <Outlet/>
       </main>
-    </>
+    </div>
   );
 }
 

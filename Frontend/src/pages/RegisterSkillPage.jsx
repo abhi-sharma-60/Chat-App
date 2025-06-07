@@ -35,7 +35,8 @@ const RegisterSkillPage = () => {
     roles: [],
     description: "",
     github: "",
-   // user: user?._id
+   // user: user?._id,
+    tools: []
   });
 
   const navigate = useNavigate();
@@ -70,7 +71,11 @@ const RegisterSkillPage = () => {
       ...data,
       languages: data.languages.map((l) => l.value),
       roles: data.roles.map((r) => r.value),
+      tools: typeof data.tools === "string"
+        ? data.tools.split(',').map((tool) => tool.trim().toLowerCase()).filter(Boolean)
+        : [],
     };
+    
 
     try {
       const response = await axios.post(URL, skillPayload, {
@@ -123,6 +128,24 @@ const RegisterSkillPage = () => {
               placeholder="Select roles"
             />
           </div>
+
+
+          {/* Tools */}
+<div className="flex flex-col gap-1">
+  <label htmlFor="tools" className="font-semibold text-purple-600">
+    Tools & Tech Stack
+  </label>
+  <input
+    type="text"
+    id="tools"
+    name="tools"
+    placeholder="e.g., React, Node.js, MongoDB"
+    className="bg-purple-50 text-black px-4 py-3 rounded-lg border border-purple-300 focus:ring-2 focus:ring-purple-300"
+    value={data.tools}
+    onChange={handleOnchange}
+  />
+</div>
+
 
           {/* GitHub */}
           <div className="flex flex-col gap-1">

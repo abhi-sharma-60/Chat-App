@@ -14,17 +14,17 @@ const updateSkills = async (req, res) => {
     }
     console.log(token)
 
-    const { languages, roles, description, github } = req.body;
+    const { languages, roles, description, github, tools } = req.body;
 
 
     const userData = await getUserDetailsFromToken(token);
-    const exist = await Skill.findOne({userData})
+    const exist = await Skill.findOne({user: userData})
     console.log(userData)
     console.log(exist)
     const userId = userData._id
 
     if(!exist){
-      const skills = new Skill({ languages, roles, description, github, user : userId})
+      const skills = new Skill({ languages, roles, description, github, user : userId, tools})
       await skills.save()
 
 
@@ -37,12 +37,13 @@ const updateSkills = async (req, res) => {
     
     // Find and update the skill by user ID
     const updatedSkill = await Skill.findOneAndUpdate(
-      { user: exist._id },
+      { user: userId },
       {
         ...(languages && { languages }),
         ...(roles && { roles }),
         ...(description && { description }),
         ...(github && { github }),
+        ...(tools && {tools})
       },
       { new: true, runValidators: true, upsert:true }
     );

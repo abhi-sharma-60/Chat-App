@@ -12,6 +12,10 @@ const EditUserDetails = ({ onClose, user }) => {
   const [data, setData] = useState({
     name: user?.name,
     profile_pic: user?.profile_pic,
+    college: user?.college,
+    branch: user?.branch,
+    course: user?.course,
+    studyYear: user?.studyYear
   });
   const theme = useSelector((state) => state.user.theme);
   const uploadPhotoRef = useRef();
@@ -50,7 +54,12 @@ const EditUserDetails = ({ onClose, user }) => {
       const payload = {
         name: data.name,
         profile_pic: data.profile_pic,
+        college: data.college,
+        branch: data.branch,
+        course: data.course,
+        studyYear: data.studyYear,
       };
+      
       const response = await axios.post(URL, payload, {
         withCredentials: true,
       });
@@ -94,78 +103,150 @@ const EditUserDetails = ({ onClose, user }) => {
         <p className="text-sm text-center mb-4">
           Edit your profile information
         </p>
-
         <form className="grid gap-4" onSubmit={handleSubmit}>
-          {/* Name */}
-          <div>
-            <label htmlFor="name" className="block mb-1 font-medium">
-              Name:
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              value={data.name}
-              onChange={handleOnChange}
-              className={`w-full px-3 py-2 rounded-lg border outline-none transition ${
-                theme === "dark"
-                  ? "bg-gray-800 text-white border-gray-700 focus:ring-2 focus:ring-purple-500"
-                  : "bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-purple-500"
-              }`}
-            />
-          </div>
+  {/* Name */}
+  <div>
+    <label htmlFor="name" className="block mb-1 font-medium">Name:</label>
+    <input
+      id="name"
+      name="name"
+      type="text"
+      value={data.name}
+      onChange={handleOnChange}
+      className={`w-full px-3 py-2 rounded-lg border outline-none transition ${
+        theme === "dark"
+          ? "bg-gray-800 text-white border-gray-700 focus:ring-2 focus:ring-purple-500"
+          : "bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-purple-500"
+      }`}
+    />
+  </div>
 
-          {/* Profile Picture */}
-          <div>
-            <label className="block font-medium mb-1">Profile Photo:</label>
-            <div className="flex items-center gap-4 mt-1">
-              <Avatar
-                width={48}
-                height={48}
-                imageUrl={data.profile_pic}
-                name={data?.name}
-              />
-              <button
-                className={`text-sm font-medium underline hover:opacity-80 ${
-                  theme === "dark" ? "text-white" : "text-purple-600"
-                }`}
-                onClick={handleOpenUploadPhoto}
-              >
-                Change Photo
-              </button>
-              <input
-                type="file"
-                id="profile_pic"
-                className="hidden"
-                onChange={handleUploadPhoto}
-                ref={uploadPhotoRef}
-              />
-            </div>
-          </div>
+  {/* Profile Picture */}
+  <div>
+    <label className="block font-medium mb-1">Profile Photo:</label>
+    <div className="flex items-center gap-4 mt-1">
+      <Avatar
+        width={48}
+        height={48}
+        imageUrl={data.profile_pic}
+        name={data?.name}
+      />
+      <button
+        className={`text-sm font-medium underline hover:opacity-80 ${
+          theme === "dark" ? "text-white" : "text-purple-600"
+        }`}
+        onClick={handleOpenUploadPhoto}
+      >
+        Change Photo
+      </button>
+      <input
+        type="file"
+        id="profile_pic"
+        className="hidden"
+        onChange={handleUploadPhoto}
+        ref={uploadPhotoRef}
+      />
+    </div>
+  </div>
 
-          <Divider />
+  {/* College */}
+  <div>
+    <label htmlFor="college" className="block mb-1 font-medium">College:</label>
+    <input
+      id="college"
+      name="college"
+      type="text"
+      value={data.college}
+      onChange={handleOnChange}
+      className={`w-full px-3 py-2 rounded-lg border outline-none transition ${
+        theme === "dark"
+          ? "bg-gray-800 text-white border-gray-700 focus:ring-2 focus:ring-purple-500"
+          : "bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-purple-500"
+      }`}
+    />
+  </div>
 
-          {/* Buttons */}
-          <div className="flex justify-end gap-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className={`px-4 py-2 rounded border ${
-                theme === "dark"
-                  ? "border-gray-600 hover:bg-gray-800"
-                  : "border-gray-300 hover:bg-gray-100"
-              }`}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className={`px-4 py-2 rounded bg-purple-600 text-white hover:bg-purple-700`}
-            >
-              Save
-            </button>
-          </div>
-        </form>
+  {/* Branch */}
+  <div>
+    <label htmlFor="branch" className="block mb-1 font-medium">Branch:</label>
+    <input
+      id="branch"
+      name="branch"
+      type="text"
+      value={data.branch}
+      onChange={handleOnChange}
+      className={`w-full px-3 py-2 rounded-lg border outline-none transition ${
+        theme === "dark"
+          ? "bg-gray-800 text-white border-gray-700 focus:ring-2 focus:ring-purple-500"
+          : "bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-purple-500"
+      }`}
+    />
+  </div>
+
+  {/* Course */}
+  <div>
+    <label htmlFor="course" className="block mb-1 font-medium">Course:</label>
+    <input
+      id="course"
+      name="course"
+      type="text"
+      value={data.course}
+      onChange={handleOnChange}
+      className={`w-full px-3 py-2 rounded-lg border outline-none transition ${
+        theme === "dark"
+          ? "bg-gray-800 text-white border-gray-700 focus:ring-2 focus:ring-purple-500"
+          : "bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-purple-500"
+      }`}
+    />
+  </div>
+
+  {/* Study Year */}
+<div>
+  <label htmlFor="studyYear" className="block mb-1 font-medium">Study Year:</label>
+  <select
+    id="studyYear"
+    name="studyYear"
+    value={data.studyYear}
+    onChange={handleOnChange}
+    className={`w-full px-3 py-2 rounded-lg border outline-none transition ${
+      theme === "dark"
+        ? "bg-gray-800 text-white border-gray-700 focus:ring-2 focus:ring-purple-500"
+        : "bg-white text-gray-900 border-gray-300 focus:ring-2 focus:ring-purple-500"
+    }`}
+  >
+    <option value="">Select Year</option>
+    <option value="1">1st Year</option>
+    <option value="2">2nd Year</option>
+    <option value="3">3rd Year</option>
+    <option value="4">4th Year</option>
+  </select>
+</div>
+
+
+  <Divider />
+
+  {/* Buttons */}
+  <div className="flex justify-end gap-4">
+    <button
+      type="button"
+      onClick={onClose}
+      className={`px-4 py-2 rounded border ${
+        theme === "dark"
+          ? "border-gray-600 hover:bg-gray-800"
+          : "border-gray-300 hover:bg-gray-100"
+      }`}
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      className={`px-4 py-2 rounded bg-purple-600 text-white hover:bg-purple-700`}
+    >
+      Save
+    </button>
+  </div>
+</form>
+
       </div>
     </div>
   );
