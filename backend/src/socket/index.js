@@ -63,6 +63,7 @@ io.on('connection',async(socket)=>{
         }).populate('messages').sort({ updatedAt : -1 })
 
         socket.emit('message',getConversationMessage?.messages || [])
+        //console.log(getConversationMessage?.messages)
     })
 
 
@@ -116,6 +117,7 @@ io.on('connection',async(socket)=>{
 
         io.to(data?.sender).emit('conversation',conversationSender)
         io.to(data?.receiver).emit('conversation',conversationReceiver)
+        //console.log(conversationSender)
     })
 
 

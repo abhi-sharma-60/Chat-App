@@ -48,6 +48,15 @@ const MessagePage = () => {
 
   const currentMessage = useRef();
 
+  // useEffect(() => {
+  //   if (socketConnection && params?.userId !== user?._id) {
+  //     socketConnection.emit("message-page", params?.userId);
+  //     socketConnection.emit("seen", params?.userId);
+  //     socketConnection.on("message-user", (data) => setDataUser(data));
+  //     socketConnection.on("message", (data) => setAllMessage(data));
+  //   }
+  // },[])
+
   useEffect(() => {
     if (params.userId === user?._id) navigate("/");
   }, [params.userId, user?._id, navigate]);
@@ -66,7 +75,14 @@ const MessagePage = () => {
       socketConnection.emit("message-page", params?.userId);
       socketConnection.emit("seen", params?.userId);
       socketConnection.on("message-user", (data) => setDataUser(data));
-      socketConnection.on("message", (data) => setAllMessage(data));
+      
+      socketConnection.on("message", (data) => {
+        //console.log(data)
+        if((data[0]?.sender?._id==user._id && data[0]?.receiver?._id==params.userId)
+        || (data[0]?.receiver?._id==user._id && data[0]?.sender?._id==params.userId)
+        || (data[0]?.msgByUserId==user._id || data[0]?.msgByUserId==params.userId)
+        ) setAllMessage(data)
+      });
     }
   }, [socketConnection, params?.userId, user]);
 
