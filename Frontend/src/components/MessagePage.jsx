@@ -12,6 +12,7 @@ import { MdSend } from "react-icons/md";
 import uploadFile from "../../helpers/uploadFile";
 import Loading from "./Loading";
 import moment from "moment";
+import axios from "axios";
 import useAuthCheck from "../helper/useAuthCheck";
 
 const MessagePage = () => {
@@ -57,6 +58,29 @@ const MessagePage = () => {
   //   }
   // },[])
 
+
+  useEffect(() => {
+    const fetchMessages = async () => {
+      try {
+        console.log("Fetching messages for user:", params.userId);
+        const URL = `${import.meta.env.VITE_BACKEND_URL}/api/messages/${params.userId}`
+        const res = await axios.get(URL, {
+          withCredentials: true
+        });
+        setAllMessage(res.data.messages);
+        console.log(allMessage)
+      } catch (error) {
+        console.error("Failed to fetch messages:", error);
+      }
+    };
+  
+    if (params?.userId) {
+      fetchMessages();
+    }
+  }, [params?.userId]);
+
+
+
   useEffect(() => {
     if (params.userId === user?._id) navigate("/");
   }, [params.userId, user?._id, navigate]);
@@ -76,13 +100,16 @@ const MessagePage = () => {
       socketConnection.emit("seen", params?.userId);
       socketConnection.on("message-user", (data) => setDataUser(data));
       
-      socketConnection.on("message", (data) => {
-        //console.log(data)
-        if((data[0]?.sender?._id==user._id && data[0]?.receiver?._id==params.userId)
-        || (data[0]?.receiver?._id==user._id && data[0]?.sender?._id==params.userId)
-        || (data[0]?.msgByUserId==user._id || data[0]?.msgByUserId==params.userId)
-        ) setAllMessage(data)
-      });
+      const messageHandler = (data) => setAllMessage(data);
+
+    // Listen only to messages from the current chat partner
+    const eventName = `message:${params?.userId}`;
+    socketConnection.on(eventName, messageHandler);
+
+    return () => {
+      socketConnection.off(eventName, messageHandler); // Clean up
+    };
+    
     }
   }, [socketConnection, params?.userId, user]);
 
@@ -120,6 +147,7 @@ const MessagePage = () => {
         imageUrl: message.imageUrl,
         videoUrl: message.videoUrl,
         msgByUserId: user?._id,
+        msgToUserId: params.userId,
       });
       setMessage({ text: "", imageUrl: "", videoUrl: "" });
     }

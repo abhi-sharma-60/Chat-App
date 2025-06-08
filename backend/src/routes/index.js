@@ -7,6 +7,7 @@ import logout from "../controllers/logout.js"
 import updateUserDetails from "../controllers/updateUserDetails.js"
 import searchUser from "../controllers/searchUser.js"
 import updateSkills from "../controllers/updateSkills.js"
+import { getMessages } from "../controllers/getMessages.js"
 
 const router = express.Router()
 
@@ -18,6 +19,7 @@ router.get("/logout",logout)
 router.post("/update-user",updateUserDetails)
 router.post("/search-user",searchUser)
 router.post("/update-skills",updateSkills)
+router.get("/messages/:userId",getMessages)
 
 
 export default router

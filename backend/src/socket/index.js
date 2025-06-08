@@ -93,6 +93,7 @@ io.on('connection',async(socket)=>{
           imageUrl : data.imageUrl,
           videoUrl : data.videoUrl,
           msgByUserId :  data?.msgByUserId,
+          msgToUserId: data?.msgToUserId
         })
         const saveMessage = await message.save()
 
@@ -108,16 +109,18 @@ io.on('connection',async(socket)=>{
         }).populate('messages').sort({ updatedAt : -1 })
 
 
-        io.to(data?.sender).emit('message',getConversationMessage?.messages || [])
-        io.to(data?.receiver).emit('message',getConversationMessage?.messages || [])
+        io.to(data?.sender).emit(`message:${data?.receiver}`, getConversationMessage?.messages || []);
+        io.to(data?.receiver).emit(`message:${data?.sender}`, getConversationMessage?.messages || []);
 
+        console.log(getConversationMessage.messages)
+        console.log("----------------------------------------------------")
         //send conversation
         const conversationSender = await getConversation(data?.sender)
         const conversationReceiver = await getConversation(data?.receiver)
 
         io.to(data?.sender).emit('conversation',conversationSender)
         io.to(data?.receiver).emit('conversation',conversationReceiver)
-        //console.log(conversationSender)
+        console.log(conversationSender)
     })
 
 

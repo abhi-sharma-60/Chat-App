@@ -26,7 +26,7 @@ async function searchUser(request, response) {
 
     // ⭐ Rating (skill.rating[0] = average rating)
     if (rating !== undefined) {
-      orFilters.push({ "rating.0": { $gte: rating } });
+      orFilters.push({ "rating.0": { $gt: rating } });
     }
 
     // 💻 Languages (array inside Skill, case-insensitive match)
