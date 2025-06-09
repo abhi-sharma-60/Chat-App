@@ -100,7 +100,11 @@ const MessagePage = () => {
       socketConnection.emit("seen", params?.userId);
       socketConnection.on("message-user", (data) => setDataUser(data));
       
-      const messageHandler = (data) => setAllMessage(data);
+      const messageHandler = (data) => {
+        setAllMessage(data);
+        socketConnection.emit("seen", params?.userId);
+        socketConnection.emit("sidebar",user?._id)
+      }
 
     // Listen only to messages from the current chat partner
     const eventName = `message:${params?.userId}`;
@@ -270,7 +274,7 @@ const MessagePage = () => {
 
         {/* Chat Body */}
         <section
-          className="flex-1 overflow-y-auto px-4 py-3 overflow-x-hidden"
+          className="flex-1 overflow-y-auto px-4 py-3 overflow-x-hidden max-w-full"
           ref={currentMessage}
         >
           {Object.entries(groupedMessages).map(([date, messages]) => (
@@ -293,37 +297,40 @@ const MessagePage = () => {
               </div>
               {messages.map((msg, i) => (
                 <div
-                  key={i}
-                  className={`rounded-xl px-4 py-2 w-fit max-w-[45%] mb-2 shadow ${
-                    user._id === msg.msgByUserId
-                      ? theme === "dark"
-                        ? "ml-auto bg-gray-200 text-black"
-                        : "ml-auto bg-purple-600 text-white"
-                      : theme === "dark"
-                      ? "bg-gray-700"
-                      : "bg-purple-100 text-black"
-                  }`}
-                >
-                  {msg.imageUrl && (
-                    <img
-                      src={msg.imageUrl}
-                      alt="shared-img"
-                      className="max-w-xs max-h-60 object-cover rounded-lg mb-2 cursor-pointer"
-                    />
-                  )}
-                  {msg.videoUrl && (
-                    <video
-                      src={msg.videoUrl}
-                      className="max-w-xs max-h-60 object-cover rounded-lg mb-2  cursor-pointer"
-                      controls
-                    />
-                  )}
-                  <p className="break-words whitespace-pre-wrap">{msg.text}</p>
+                key={i}
+                className={`rounded-xl px-4 py-2 w-fit max-w-[320px] mb-2 shadow ${
+                  user._id === msg.msgByUserId
+                    ? theme === "dark"
+                      ? "ml-auto bg-gray-200 text-black"
+                      : "ml-auto bg-purple-600 text-white"
+                    : theme === "dark"
+                    ? "bg-gray-700"
+                    : "bg-purple-100 text-black"
+                }`}
+              >
+                {msg.imageUrl && (
+                  <img
+                    src={msg.imageUrl}
+                    alt="shared-img"
+                    className="w-full max-h-60 object-contain rounded-lg mb-2 cursor-pointer"
 
-                  <p className="text-xs text-right opacity-70 mt-1">
-                    {moment(msg.createdAt).format("HH:mm")}
-                  </p>
-                </div>
+                  />
+                )}
+                {msg.videoUrl && (
+                  <video
+                    src={msg.videoUrl}
+                    className="w-full max-h-60 object-contain rounded-lg mb-2 cursor-pointer"
+
+                    controls
+                  />
+                )}
+                <p className="break-words whitespace-pre-wrap">{msg.text}</p>
+              
+                <p className="text-xs text-right opacity-70 mt-1">
+                  {moment(msg.createdAt).format("HH:mm")}
+                </p>
+              </div>
+              
               ))}
             </div>
           ))}
@@ -334,39 +341,42 @@ const MessagePage = () => {
           )}
         </section>
 
+        
         {/* Media Preview */}
-        {(message.imageUrl || message.videoUrl) && (
-          <div className="w-fit h-fit flex items-center justify-center z-[1000] px-4 py-4 overflow-y-auto">
-            <div className="relative bg-white rounded-xl p-4">
-              <button
-                onClick={
-                  message.imageUrl
-                    ? () => setMessage((prev) => ({ ...prev, imageUrl: "" }))
-                    : () => setMessage((prev) => ({ ...prev, videoUrl: "" }))
-                }
-                className="absolute top-2 right-2 text-red-600"
-              >
-                <IoClose size={24} />
-              </button>
-              {message.imageUrl && (
-                <img
-                  src={message.imageUrl}
-                  className="max-w-md rounded-lg"
-                  alt="Preview"
-                />
-              )}
-              {message.videoUrl && (
-                <video
-                  src={message.videoUrl}
-                  className="max-w-md rounded-lg"
-                  controls
-                  autoPlay
-                  muted
-                />
-              )}
-            </div>
-          </div>
-        )}
+{(message.imageUrl || message.videoUrl) && (
+  <div className="w-full h-fit flex items-center justify-center z-[1000] px-4 py-4 overflow-y-auto">
+    <div className="relative bg-white rounded-xl p-4 max-w-[90vw] sm:max-w-md overflow-hidden">
+      <button
+        onClick={
+          message.imageUrl
+            ? () => setMessage((prev) => ({ ...prev, imageUrl: "" }))
+            : () => setMessage((prev) => ({ ...prev, videoUrl: "" }))
+        }
+        className="absolute top-2 right-2 text-red-600"
+      >
+        <IoClose size={24} />
+      </button>
+
+      {message.imageUrl && (
+        <img
+          src={message.imageUrl}
+          className="w-full h-auto rounded-lg object-contain"
+          alt="Preview"
+        />
+      )}
+      {message.videoUrl && (
+        <video
+          src={message.videoUrl}
+          className="w-full h-auto rounded-lg object-contain"
+          controls
+          autoPlay
+          muted
+        />
+      )}
+    </div>
+  </div>
+)}
+
 
         {/* Footer */}
         <footer className="border-t px-4 py-3 flex items-center gap-3">

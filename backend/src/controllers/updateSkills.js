@@ -18,6 +18,12 @@ const updateSkills = async (req, res) => {
 
 
     const userData = await getUserDetailsFromToken(token);
+    if(userData.logout){
+      return {
+          message: "User not found",
+          success: false
+        };
+  }
     const exist = await Skill.findOne({user: userData})
     console.log(userData)
     console.log(exist)

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
@@ -26,18 +26,54 @@ const roleOptions = [
   { value: "mobile", label: "Mobile" },
 ];
 
-const RegisterSkillPage = () => {
+const EditSkillPage = () => {
+  
 
     //const user = useSelector((state) => state?.user);
+    const [data, setData] = useState({
+      languages: [],
+      roles: [],
+      description: "",
+      github: "",
+     // user: user?._id,
+      tools: []
+    });
 
-  const [data, setData] = useState({
-    languages: [],
-    roles: [],
-    description: "",
-    github: "",
-   // user: user?._id,
-    tools: []
-  });
+    useEffect(() => {
+      const fetchSkills = async () => {
+        try {
+          const URL = `${import.meta.env.VITE_BACKEND_URL}/api/get-skills`;
+    
+          const res = await axios.get(URL, {
+            withCredentials: true,
+          });
+    
+          const fetched = res.data.data[0];
+          console.log(fetched)
+    
+          setData({
+            languages: (fetched.languages || []).map((lang) =>
+              languageOptions.find((opt) => opt.value === lang)
+            ).filter(Boolean),
+    
+            roles: (fetched.roles || []).map((role) =>
+              roleOptions.find((opt) => opt.value === role)
+            ).filter(Boolean),
+    
+            description: fetched.description || "",
+            github: fetched.github || "",
+            tools: (fetched.tools || []).join(", "),
+          });
+        } catch (err) {
+          console.error("Error fetching skills:", err);
+          toast.error("Failed to fetch skills.");
+        }
+      };
+    
+      fetchSkills();
+    }, []);
+
+  
 
   const navigate = useNavigate();
 
@@ -92,7 +128,7 @@ const RegisterSkillPage = () => {
     <div className="h-screen overflow-y-auto bg-gradient-to-tr from-indigo-100 via-purple-100 to-pink-100 p-6">
   <div className="max-w-md mx-auto my-8 bg-white/90 backdrop-blur-md rounded-3xl shadow-xl p-8 border border-purple-200">
  <h3 className="text-3xl font-extrabold text-center text-purple-700 mb-8">
-          Register Your Skills 🚀
+          Your Skills 🚀
         </h3>
         <form className="grid gap-5" onSubmit={handleSubmit}>
           {/* Languages */}
@@ -193,4 +229,4 @@ const RegisterSkillPage = () => {
   );
 };
 
-export default RegisterSkillPage;
+export default EditSkillPage;

@@ -1,8 +1,8 @@
 // controllers/skillController.js
-import Skill from "../models/Skill.js";
+import Skill from "../models/skillmodel.js";
 import getUserDetailsFromToken from "../helpers/getUserDetailsFromToken.js";
 
-const getSkills = async (req, res) => {
+const getSkills = async (request, res) => {
   try {
     // Extract user info (if needed for auth/logging)
     const token = request.cookies.token || ""
@@ -15,9 +15,16 @@ const getSkills = async (req, res) => {
     }
 
     const user = await getUserDetailsFromToken(token)
+    if(user.logout){
+      return {
+          message: "User not found",
+          success: false
+        };
+  }
 
     // Get all skills, populate associated user details (optional)
     const skills = await Skill.find({ user: user._id })
+    //console.log(skills)
 
     res.status(200).json({
       success: true,

@@ -13,6 +13,12 @@ async function updateUserDetails(request,response){
         }
 
         const user = await getUserDetailsFromToken(token)
+        if(user.logout){
+            return {
+                message: "User not found",
+                success: false
+              };
+        }
 
         const { name, profile_pic } = request.body
 

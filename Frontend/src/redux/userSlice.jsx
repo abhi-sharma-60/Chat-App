@@ -21,7 +21,7 @@ const initialState = {
   college: "",
   branch: "",
   course: "",
-  skills: {}, //make skills an object,
+  skills: null, //make skills an object,
   studyYear: "",
 };
 

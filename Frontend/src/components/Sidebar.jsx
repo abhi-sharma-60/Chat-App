@@ -11,8 +11,12 @@ import { GoArrowUpLeft } from "react-icons/go";
 import SearchUser from "./SearchUser";
 import { logout } from "../redux/userSlice";
 import ThemeToggle from "./ThemeToggle";
+import { SlSettings } from "react-icons/sl";
+import { useParams } from "react-router-dom";
 
 const Sidebar = () => {
+  const { userId: currentChatUserId } = useParams();
+
   const user = useSelector((state) => state.user);
   const theme = useSelector((state) => state.user.theme);
   const [editUserOpen, setEditUserOpen] = useState(false);
@@ -42,6 +46,8 @@ const Sidebar = () => {
           };
         });
         setAllUser(formattedUsers);
+        console.log("alluser")
+        console.log(formattedUsers)
       });
 
       return () => {
@@ -92,6 +98,24 @@ const Sidebar = () => {
           >
             <FaUserPlus size={20} />
           </div>
+
+
+            {/**skills */}
+            <NavLink
+            to="/skills"
+            className={({ isActive }) =>
+              `w-12 h-12 flex justify-center items-center cursor-pointer ${
+                theme === "dark" ? "hover:bg-gray-700" : "hover:bg-slate-300"
+              } rounded ${
+                isActive && (theme === "dark" ? "bg-gray-700" : "bg-slate-200")
+              }`
+            }
+            title="Skills"
+          >
+            <SlSettings size={20} />
+          </NavLink>
+
+
         </div>
 
         {/* Bottom actions */}
@@ -183,10 +207,14 @@ const Sidebar = () => {
                         </div>
                       )}
                     </div>
-                    <p className="line-clamp-1">{conv?.lastMsg?.text}</p>
+                    <p className="truncate break-all max-w-[110px]">
+  {conv?.lastMsg?.text}
+</p>
+
+
                   </div>
                 </div>
-                {conv?.unseenMsg > 0 && (
+                {conv?.unseenMsg > 0 && (conv?.userDetails?._id!==currentChatUserId) && (conv?.lastMsg?.seen!=true) && (
                   <span className="w-7 h-7 text-xs flex justify-center items-center ml-auto bg-primary text-white font-semibold rounded-full">
                     {conv?.unseenMsg > 99 ? "99+" : conv.unseenMsg}
                   </span>
