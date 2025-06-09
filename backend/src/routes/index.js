@@ -22,6 +22,6 @@ router.post("/search-user",searchUser)
 router.post("/update-skills",updateSkills)
 router.get("/messages/:userId",getMessages)
 router.get("/get-skills",getSkills)
-
+router.get("/get-profile-skills/:userId",getSkills)
 
 export default router

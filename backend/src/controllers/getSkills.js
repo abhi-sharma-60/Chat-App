@@ -6,9 +6,29 @@ const getSkills = async (request, res) => {
   try {
     // Extract user info (if needed for auth/logging)
     const token = request.cookies.token || ""
+    
+
+    if(request.params?.userId){
+      const userId = request.params.userId
+      const skillsData = await Skill.findOne({user: userId})
+      console.log("hit")
+      console.log(userId)
+      if(!skillsData){
+        return res.json({
+          message: "Skill not found",
+          success: false
+          
+        })
+      }
+console.log("hit")
+      return res.status(200).json({
+        success: true,
+        data: skillsData,
+      });
+    }
 
     if(token==null || token==""){
-        return response.json({
+        return res.json({
             message : "user not logged in",
             success : false
         })

@@ -15,6 +15,28 @@ import moment from "moment";
 import axios from "axios";
 import useAuthCheck from "../helper/useAuthCheck";
 
+
+const languageOptions = [
+  { value: "c", label: "C" },
+  { value: "cpp", label: "C++" },
+  { value: "python", label: "Python" },
+  { value: "java", label: "Java" },
+  { value: "kotlin", label: "Kotlin" },
+  { value: "javascript", label: "JavaScript" },
+  { value: "go", label: "Go Lang" },
+  { value: "ruby", label: "Ruby" },
+  { value: "r", label: "R" },
+];
+
+const roleOptions = [
+  { value: "full stack", label: "Full Stack" },
+  { value: "frontend", label: "Frontend" },
+  { value: "backend", label: "Backend" },
+  { value: "web", label: "Web" },
+  { value: "mobile", label: "Mobile" },
+];
+
+
 const MessagePage = () => {
   const params = useParams();
   const navigate = useNavigate();
@@ -31,6 +53,15 @@ const MessagePage = () => {
     online: false,
     _id: "",
   });
+
+  const [skill,setSkill] = useState({
+    rating: 0,
+    languages: [],
+    roles: [],
+    tools: "",
+    github: "",
+    description: "",
+  })
 
   // useEffect(() => {
   //   if(!user) useAuthCheck(user);
@@ -73,9 +104,60 @@ const MessagePage = () => {
         console.error("Failed to fetch messages:", error);
       }
     };
+
+
+    const fetchSkills = async () => {
+      try {
+        const URL = `${import.meta.env.VITE_BACKEND_URL}/api/get-profile-skills/${params.userId}`;
+        const res = await axios.get(URL,{
+          withCredentials: true,
+        });
+  
+
+        if (!res.data.success || !res.data.data) {
+          // User has no skills: reset the skill state
+          setSkill({
+            rating: 0,
+            languages: [],
+            roles: [],
+            tools: "",
+            github: "",
+            description: "",
+          });
+          return;
+        }
+
+        const fetched = res.data.data;
+        // console.log("skills")
+        // console.log(fetched);
+  
+        setSkill({
+          languages: (fetched.languages || []).map((lang) =>
+            languageOptions.find((opt) => opt.value === lang)
+          ).filter(Boolean),
+  
+          roles: (fetched.roles || []).map((role) =>
+            roleOptions.find((opt) => opt.value === role)
+          ).filter(Boolean),
+  
+          description: fetched.description || "",
+          rating: fetched.rating[0]|| "N/A",
+          github: fetched.github || "",
+          tools: (fetched.tools || []).join(", "),
+        });
+        
+      } catch (err) {
+        console.error("Error fetching skills:", err);
+        toast.error("Failed to fetch skills.");
+      }
+    };
+
+
+
   
     if (params?.userId) {
       fetchMessages();
+      fetchSkills();
     }
   }, [params?.userId]);
 
@@ -236,41 +318,92 @@ const MessagePage = () => {
         </header>
 
         {/* User Detail Side Panel */}
-        {showUserDetails && (
-          <div
-            className={`absolute top-0 right-0 h-full w-80 z-50 transition-all shadow-xl border-l ${
-              theme === "dark"
-                ? "bg-gray-900 border-gray-700 text-white"
-                : "bg-white border-gray-300 text-black"
-            }`}
-          >
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-lg font-semibold">User Details</h2>
-              <button
-                onClick={() => setShowUserDetails(false)}
-                className="text-red-500"
-              >
-                <IoClose size={24} />
-              </button>
-            </div>
-            <div className="flex flex-col items-center gap-4 p-4">
-              <img
-                src={dataUser?.profile_pic}
-                alt="Profile"
-                className="w-32 h-32 rounded-full object-cover shadow-md"
-              />
-              <h3 className="text-xl font-bold">{dataUser?.name}</h3>
-              <p className="text-sm text-gray-500">{dataUser?.email}</p>
-              <p
-                className={`text-sm font-medium ${
-                  dataUser?.online ? "text-green-500" : "text-gray-400"
-                }`}
-              >
-                {dataUser?.online ? "Online" : "Offline"}
-              </p>
-            </div>
-          </div>
-        )}
+{showUserDetails && (
+  <div
+    className={`absolute top-0 right-0 h-full w-80 z-50 transition-all shadow-xl border-l ${
+      theme === "dark"
+        ? "bg-gray-900 border-gray-700 text-white"
+        : "bg-white border-gray-300 text-black"
+    }`}
+  >
+    <div className="flex justify-between items-center p-4 border-b">
+      <h2 className="text-lg font-semibold">User Details</h2>
+      <button
+        onClick={() => setShowUserDetails(false)}
+        className="text-red-500"
+      >
+        <IoClose size={24} />
+      </button>
+    </div>
+
+    <div className="flex flex-col items-center gap-4 p-4">
+      <img
+        src={dataUser?.profile_pic}
+        alt="Profile"
+        className="w-32 h-32 rounded-full object-cover shadow-md"
+      />
+      <h3 className="text-xl font-bold">{dataUser?.name}</h3>
+      <p className="text-sm text-gray-500">{dataUser?.email}</p>
+      <p
+        className={`text-sm font-medium ${
+          dataUser?.online ? "text-green-500" : "text-gray-400"
+        }`}
+      >
+        {dataUser?.online ? "Online" : "Offline"}
+      </p>
+
+      {/* Skills Section */}
+      <div className="w-full mt-4 text-sm text-left space-y-2">
+        <h4 className="font-semibold text-base mb-1">Skills</h4>
+
+        <div>
+          <span className="font-medium">Languages:</span>{" "}
+          {skill.languages.length > 0
+            ? skill.languages.map((lang) => lang?.label).join(", ")
+            : "N/A"}
+        </div>
+
+        <div>
+          <span className="font-medium">Roles:</span>{" "}
+          {skill.roles.length > 0
+            ? skill.roles.map((role) => role?.label).join(", ")
+            : "N/A"}
+        </div>
+
+        <div>
+          <span className="font-medium">Tools:</span> {skill.tools || "N/A"}
+        </div>
+
+        <div>
+          <span className="font-medium">GitHub:</span>{" "}
+          {skill.github ? (
+            <a
+              href={skill.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 underline"
+            >
+              {skill.github}
+            </a>
+          ) : (
+            "N/A"
+          )}
+        </div>
+
+        <div>
+          <span className="font-medium">Rating:</span> {skill.rating || "N/A"}
+        </div>
+
+
+        <div>
+          <span className="font-medium">Description:</span>{" "}
+          {skill.description || "N/A"}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
 
         {/* Chat Body */}
         <section

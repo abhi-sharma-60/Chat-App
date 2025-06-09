@@ -10,6 +10,7 @@ import {
 } from "../redux/userSlice";
 import Sidebar from "../components/Sidebar";
 import io from "socket.io-client";
+import { useState } from "react";
 
 const Home = () => {
   const user = useSelector((state) => state.user);
@@ -17,8 +18,17 @@ const Home = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+
   const basePath = location.pathname === "/";
   console.log("user", user);
+  const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0);
+
+useEffect(() => {
+  if (location.pathname === "/") {
+    setSidebarRefreshKey(prev => prev + 1); // force Sidebar to refresh
+  }
+}, [location.pathname]);
+
   const fetchUserDetails = async () => {
     try {
       const URL = `${import.meta.env.VITE_BACKEND_URL}/api/user-details`;
@@ -63,7 +73,7 @@ const Home = () => {
   return (
     <div className="grid lg:grid-cols-[300px,1fr] h-screen max-h-screen">
       <section className={`bg-white ${!basePath && "hidden"} lg:block`}>
-        <Sidebar />
+        <Sidebar refreshKey={sidebarRefreshKey} />
       </section>
       {/* message component  */}
       <section className={`${basePath && "hidden"}`}>

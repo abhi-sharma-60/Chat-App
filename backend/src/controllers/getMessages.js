@@ -6,7 +6,7 @@ export const getMessages = async (req, res) => {
     // 🔐 Get current user from token
     const currentUser = await getUserDetailsFromToken(req.cookies.token);
     const userId = req.params.userId;
-    console.log(req)
+   // console.log(req)
 
     if (!userId) {
       return res.status(400).json({ error: "User ID is required" });

@@ -14,7 +14,7 @@ import ThemeToggle from "./ThemeToggle";
 import { SlSettings } from "react-icons/sl";
 import { useParams } from "react-router-dom";
 
-const Sidebar = () => {
+const Sidebar = (refreshKey) => {
   const { userId: currentChatUserId } = useParams();
 
   const user = useSelector((state) => state.user);
@@ -54,7 +54,7 @@ const Sidebar = () => {
         socketConnection.off("conversation");
       };
     }
-  }, [socketConnection, user?._id]);
+  }, [socketConnection, user?._id,refreshKey]);
 
   const handleLogout = () => {
     dispatch(logout());
