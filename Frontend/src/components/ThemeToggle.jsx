@@ -9,22 +9,22 @@ const ThemeToggle = () => {
 
   return (
     <button
-      type="button" // ✅ Prevent default form submit behavior
+      type="button"
       onClick={(e) => {
         e.preventDefault();
         dispatch(toggleTheme());
       }}
-      className={`p-2 rounded-full transition-colors ${
+      className={`p-3 rounded-full transition-all duration-300 hover-lift shadow-lg ${
         theme === "light"
-          ? "bg-gray-200 hover:bg-gray-300"
-          : "bg-gray-700 hover:bg-gray-600"
+          ? "bg-gradient-to-br from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600"
+          : "bg-gradient-to-br from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
       }`}
       title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
     >
       {theme === "light" ? (
-        <FaMoon className="text-gray-700" />
+        <FaMoon className="w-4 h-4" />
       ) : (
-        <FaSun className="text-yellow-400" />
+        <FaSun className="w-4 h-4" />
       )}
     </button>
   );
