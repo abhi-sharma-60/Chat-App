@@ -13,6 +13,7 @@ import { logout } from "../redux/userSlice";
 import ThemeToggle from "./ThemeToggle";
 import { SlSettings } from "react-icons/sl";
 import { useParams } from "react-router-dom";
+import axios from 'axios';
 
 const Sidebar = (refreshKey) => {
   const { userId: currentChatUserId } = useParams();
@@ -56,10 +57,35 @@ const Sidebar = (refreshKey) => {
     }
   }, [socketConnection, user?._id,refreshKey]);
 
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate("/email");
-    localStorage.clear();
+  const handleLogout = async () => {
+  
+    try {
+      const URL = `${import.meta.env.VITE_BACKEND_URL}/api/logout`;
+  
+      const response = await axios.get(URL, {
+        withCredentials: true, // sends HttpOnly cookies
+      });
+
+      console.log(response)
+  
+      if (!response.data.success) {
+        throw new Error(response.message || 'Logout failed');
+      }
+  
+      // Clear Redux state
+      dispatch(logout());
+  
+      // Clear localStorage (if you're using it for other app state)
+      localStorage.clear();
+  
+      // Redirect user
+      navigate('/email');
+  
+    } catch (error) {
+      console.error('Logout error:', error.message);
+      // Optionally show user-facing error message
+      alert('Logout failed. Please try again.');
+    }
   };
 
   return (
