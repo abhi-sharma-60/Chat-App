@@ -13,6 +13,8 @@ import uploadFile from "../../helpers/uploadFile";
 import Loading from "./Loading";
 import moment from "moment";
 import axios from "axios";
+import useAuthCheck from "../helper/useAuthCheck";
+
 
 const languageOptions = [
   { value: "c", label: "C" },
@@ -34,6 +36,7 @@ const roleOptions = [
   { value: "mobile", label: "Mobile" },
 ];
 
+
 const MessagePage = () => {
   const params = useParams();
   const navigate = useNavigate();
@@ -51,14 +54,18 @@ const MessagePage = () => {
     _id: "",
   });
 
-  const [skill, setSkill] = useState({
+  const [skill,setSkill] = useState({
     rating: 0,
     languages: [],
     roles: [],
     tools: "",
     github: "",
     description: "",
-  });
+  })
+
+  // useEffect(() => {
+  //   if(!user) useAuthCheck(user);
+  // },[])
 
   const [openImageVideoUpload, setOpenImageVideoUpload] = useState(false);
   const [message, setMessage] = useState({
@@ -73,27 +80,42 @@ const MessagePage = () => {
 
   const currentMessage = useRef();
 
+  // useEffect(() => {
+  //   if (socketConnection && params?.userId !== user?._id) {
+  //     socketConnection.emit("message-page", params?.userId);
+  //     socketConnection.emit("seen", params?.userId);
+  //     socketConnection.on("message-user", (data) => setDataUser(data));
+  //     socketConnection.on("message", (data) => setAllMessage(data));
+  //   }
+  // },[])
+
+
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        const URL = `${import.meta.env.VITE_BACKEND_URL}/api/messages/${params.userId}`;
+        console.log("Fetching messages for user:", params.userId);
+        const URL = `${import.meta.env.VITE_BACKEND_URL}/api/messages/${params.userId}`
         const res = await axios.get(URL, {
           withCredentials: true
         });
         setAllMessage(res.data.messages);
+        console.log(allMessage)
       } catch (error) {
         console.error("Failed to fetch messages:", error);
       }
     };
 
+
     const fetchSkills = async () => {
       try {
         const URL = `${import.meta.env.VITE_BACKEND_URL}/api/get-profile-skills/${params.userId}`;
-        const res = await axios.get(URL, {
+        const res = await axios.get(URL,{
           withCredentials: true,
         });
+  
 
         if (!res.data.success || !res.data.data) {
+          // User has no skills: reset the skill state
           setSkill({
             rating: 0,
             languages: [],
@@ -106,31 +128,40 @@ const MessagePage = () => {
         }
 
         const fetched = res.data.data;
-
+        // console.log("skills")
+        // console.log(fetched);
+  
         setSkill({
           languages: (fetched.languages || []).map((lang) =>
             languageOptions.find((opt) => opt.value === lang)
           ).filter(Boolean),
-
+  
           roles: (fetched.roles || []).map((role) =>
             roleOptions.find((opt) => opt.value === role)
           ).filter(Boolean),
-
+  
           description: fetched.description || "",
-          rating: fetched.rating[0] || "N/A",
+          rating: fetched.rating[0]|| "N/A",
           github: fetched.github || "",
           tools: (fetched.tools || []).join(", "),
         });
+        
       } catch (err) {
         console.error("Error fetching skills:", err);
+        toast.error("Failed to fetch skills.");
       }
     };
 
+
+
+  
     if (params?.userId) {
       fetchMessages();
       fetchSkills();
     }
   }, [params?.userId]);
+
+
 
   useEffect(() => {
     if (params.userId === user?._id) navigate("/");
@@ -154,15 +185,17 @@ const MessagePage = () => {
       const messageHandler = (data) => {
         setAllMessage(data);
         socketConnection.emit("seen", params?.userId);
-        socketConnection.emit("sidebar", user?._id);
-      };
+        socketConnection.emit("sidebar",user?._id)
+      }
 
-      const eventName = `message:${params?.userId}`;
-      socketConnection.on(eventName, messageHandler);
+    // Listen only to messages from the current chat partner
+    const eventName = `message:${params?.userId}`;
+    socketConnection.on(eventName, messageHandler);
 
-      return () => {
-        socketConnection.off(eventName, messageHandler);
-      };
+    return () => {
+      socketConnection.off(eventName, messageHandler); // Clean up
+    };
+    
     }
   }, [socketConnection, params?.userId, user]);
 
@@ -225,68 +258,49 @@ const MessagePage = () => {
     <div
       className={`min-h-screen flex justify-center items-center p-4 transition-all duration-300 ${
         theme === "dark"
-          ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900"
-          : "bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50"
+          ? "bg-gray-800 border-gray-700 border-l-2"
+          : "bg-gradient-to-tr from-indigo-100 via-purple-100 border-l-2 to-pink-100 text-black"
       }`}
     >
       <div
-        className={`relative flex flex-col w-full max-w-full h-[98vh] rounded-3xl shadow-2xl border backdrop-blur-xl overflow-hidden ${
+        className={`relative flex flex-col w-full max-w-full h-[98vh] rounded-3xl shadow-xl border backdrop-blur-md overflow-hidden ${
           theme === "dark"
-            ? "bg-gray-900/90 border-gray-700 text-white glass-effect-dark"
-            : "bg-white/90 border-purple-200 text-black glass-effect"
+            ? "bg-gray-800 border-gray-700 text-white"
+            : "bg-white/90 border-purple-200 text-black"
         }`}
       >
         {/* Header */}
-        <header className={`flex justify-between items-center px-6 py-4 border-b backdrop-blur-sm ${
-          theme === "dark" 
-            ? "border-gray-700 bg-gray-800/50" 
-            : "border-purple-200 bg-white/50"
-        }`}>
-          <div className="flex items-center gap-4">
-            <Link to="/" className="lg:hidden hover-lift">
-              <div className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-                <FiArrowLeft size={20} />
-              </div>
+        <header className="flex justify-between items-center px-4 py-3 border-b border-purple-200 relative">
+          <div className="flex items-center gap-3">
+            <Link to="/" className="lg:hidden">
+              <FiArrowLeft size={24} />
             </Link>
             <Avatar
-              height={52}
-              width={52}
+              height={48}
+              width={48}
               imageUrl={dataUser?.profile_pic}
               name={dataUser?.name}
               userId={dataUser._id}
             />
             <div>
-              <h3 className="font-bold text-xl bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                {dataUser?.name}
-              </h3>
-              <p className="text-sm flex items-center gap-2">
+              <h3 className="font-semibold text-lg">{dataUser?.name}</h3>
+              <p className="text-sm">
                 {dataUser?.online ? (
-                  <>
-                    <span className="w-2 h-2 bg-green-500 rounded-full pulse-online"></span>
-                    <span className="text-green-500 font-medium">Online</span>
-                  </>
+                  <span className="text-green-500">online</span>
                 ) : (
-                  <>
-                    <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
-                    <span className="text-gray-400">Offline</span>
-                  </>
+                  "offline"
                 )}
               </p>
             </div>
           </div>
           <div className="relative">
-            <button 
-              onClick={() => setShowDropdown((prev) => !prev)}
-              className="p-3 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover-lift"
-            >
+            <button onClick={() => setShowDropdown((prev) => !prev)}>
               <HiOutlineDotsVertical size={20} />
             </button>
             {showDropdown && (
               <div
-                className={`absolute right-0 mt-2 w-48 z-50 shadow-xl rounded-xl border backdrop-blur-sm ${
-                  theme === "dark" 
-                    ? "bg-gray-800/90 border-gray-600" 
-                    : "bg-white/90 border-gray-200"
+                className={`absolute right-0 mt-2 w-40 z-50 shadow-md rounded-lg ${
+                  theme === "dark" ? "bg-gray-700" : "bg-purple-200"
                 }`}
               >
                 <button
@@ -294,9 +308,9 @@ const MessagePage = () => {
                     setShowUserDetails(true);
                     setShowDropdown(false);
                   }}
-                  className="w-full text-left px-4 py-3 hover:bg-purple-100 dark:hover:bg-gray-700 rounded-xl transition-colors font-medium"
+                  className="w-full text-left px-4 py-2 hover:bg-purple-100 dark:hover:bg-gray-600"
                 >
-                  View Profile
+                  View User Details
                 </button>
               </div>
             )}
@@ -304,130 +318,106 @@ const MessagePage = () => {
         </header>
 
         {/* User Detail Side Panel */}
-        {showUserDetails && (
-          <div
-            className={`absolute top-0 right-0 h-full w-80 z-50 transition-all shadow-2xl border-l backdrop-blur-xl ${
-              theme === "dark"
-                ? "bg-gray-900/95 border-gray-700 text-white"
-                : "bg-white/95 border-gray-300 text-black"
-            }`}
-          >
-            <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                Profile Details
-              </h2>
-              <button
-                onClick={() => setShowUserDetails(false)}
-                className="p-2 rounded-full hover:bg-red-100 dark:hover:bg-red-900/30 text-red-500 transition-colors hover-lift"
-              >
-                <IoClose size={24} />
-              </button>
-            </div>
+{showUserDetails && (
+  <div
+    className={`absolute top-0 right-0 h-full w-80 z-50 transition-all shadow-xl border-l ${
+      theme === "dark"
+        ? "bg-gray-900 border-gray-700 text-white"
+        : "bg-white border-gray-300 text-black"
+    }`}
+  >
+    <div className="flex justify-between items-center p-4 border-b">
+      <h2 className="text-lg font-semibold">User Details</h2>
+      <button
+        onClick={() => setShowUserDetails(false)}
+        className="text-red-500"
+      >
+        <IoClose size={24} />
+      </button>
+    </div>
 
-            <div className="flex flex-col items-center gap-6 p-6">
-              <div className="relative">
-                <img
-                  src={dataUser?.profile_pic}
-                  alt="Profile"
-                  className="w-32 h-32 rounded-full object-cover shadow-xl ring-4 ring-purple-200 dark:ring-purple-800"
-                />
-                {dataUser?.online && (
-                  <span className="absolute bottom-2 right-2 w-6 h-6 bg-green-500 border-4 border-white dark:border-gray-900 rounded-full pulse-online"></span>
-                )}
-              </div>
-              
-              <div className="text-center">
-                <h3 className="text-2xl font-bold mb-2">{dataUser?.name}</h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-4">{dataUser?.email}</p>
-              </div>
+    <div className="flex flex-col items-center gap-4 p-4">
+      <img
+        src={dataUser?.profile_pic}
+        alt="Profile"
+        className="w-32 h-32 rounded-full object-cover shadow-md"
+      />
+      <h3 className="text-xl font-bold">{dataUser?.name}</h3>
+      <p className="text-sm text-gray-500">{dataUser?.email}</p>
+      <p
+        className={`text-sm font-medium ${
+          dataUser?.online ? "text-green-500" : "text-gray-400"
+        }`}
+      >
+        {dataUser?.online ? "Online" : "Offline"}
+      </p>
 
-              {/* Skills Section */}
-              <div className="w-full space-y-4">
-                <h4 className="font-bold text-lg mb-4 text-center bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  Skills & Info
-                </h4>
+      {/* Skills Section */}
+      <div className="w-full mt-4 text-sm text-left space-y-2">
+        <h4 className="font-semibold text-base mb-1">Skills</h4>
 
-                <div className="space-y-3">
-                  <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800">
-                    <span className="font-semibold text-purple-600 dark:text-purple-400">Languages:</span>
-                    <p className="mt-1">
-                      {skill.languages.length > 0
-                        ? skill.languages.map((lang) => lang?.label).join(", ")
-                        : "Not specified"}
-                    </p>
-                  </div>
+        <div>
+          <span className="font-medium">Languages:</span>{" "}
+          {skill.languages.length > 0
+            ? skill.languages.map((lang) => lang?.label).join(", ")
+            : "N/A"}
+        </div>
 
-                  <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800">
-                    <span className="font-semibold text-purple-600 dark:text-purple-400">Roles:</span>
-                    <p className="mt-1">
-                      {skill.roles.length > 0
-                        ? skill.roles.map((role) => role?.label).join(", ")
-                        : "Not specified"}
-                    </p>
-                  </div>
+        <div>
+          <span className="font-medium">Roles:</span>{" "}
+          {skill.roles.length > 0
+            ? skill.roles.map((role) => role?.label).join(", ")
+            : "N/A"}
+        </div>
 
-                  <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800">
-                    <span className="font-semibold text-purple-600 dark:text-purple-400">Tools:</span>
-                    <p className="mt-1">{skill.tools || "Not specified"}</p>
-                  </div>
+        <div>
+          <span className="font-medium">Tools:</span> {skill.tools || "N/A"}
+        </div>
 
-                  <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800">
-                    <span className="font-semibold text-purple-600 dark:text-purple-400">GitHub:</span>
-                    <p className="mt-1">
-                      {skill.github ? (
-                        <a
-                          href={skill.github}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 hover:text-blue-600 underline break-all"
-                        >
-                          View Profile
-                        </a>
-                      ) : (
-                        "Not provided"
-                      )}
-                    </p>
-                  </div>
+        <div>
+          <span className="font-medium">GitHub:</span>{" "}
+          {skill.github ? (
+            <a
+              href={skill.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-500 underline"
+            >
+              {skill.github}
+            </a>
+          ) : (
+            "N/A"
+          )}
+        </div>
 
-                  <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800">
-                    <span className="font-semibold text-purple-600 dark:text-purple-400">Rating:</span>
-                    <p className="mt-1 flex items-center gap-1">
-                      {skill.rating !== "N/A" ? (
-                        <>
-                          <span className="text-yellow-500">★</span>
-                          {skill.rating}
-                        </>
-                      ) : (
-                        "Not rated yet"
-                      )}
-                    </p>
-                  </div>
+        <div>
+          <span className="font-medium">Rating:</span> {skill.rating || "N/A"}
+        </div>
 
-                  {skill.description && (
-                    <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800">
-                      <span className="font-semibold text-purple-600 dark:text-purple-400">About:</span>
-                      <p className="mt-1">{skill.description}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+
+        <div>
+          <span className="font-medium">Description:</span>{" "}
+          {skill.description || "N/A"}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
 
         {/* Chat Body */}
         <section
-          className="flex-1 overflow-y-auto px-6 py-4 srollbar"
+          className="flex-1 overflow-y-auto px-4 py-3 overflow-x-hidden max-w-full"
           ref={currentMessage}
         >
           {Object.entries(groupedMessages).map(([date, messages]) => (
             <div key={date}>
-              <div className="flex justify-center my-4">
+              <div className="flex justify-center my-2">
                 <span
-                  className={`text-sm px-4 py-2 rounded-full font-medium shadow-sm ${
+                  className={`text-sm px-4 py-1 rounded-full ${
                     theme === "dark"
-                      ? "bg-gray-800 text-gray-300 border border-gray-700"
-                      : "bg-white text-gray-600 border border-gray-200"
+                      ? "bg-gray-700 text-white"
+                      : "bg-purple-100 text-purple-700"
                   }`}
                 >
                   {moment(date).calendar(null, {
@@ -440,127 +430,120 @@ const MessagePage = () => {
               </div>
               {messages.map((msg, i) => (
                 <div
-                  key={i}
-                  className={`rounded-2xl px-4 py-3 w-fit max-w-[320px] mb-3 shadow-lg message-bubble ${
-                    user._id === msg.msgByUserId
-                      ? theme === "dark"
-                        ? "ml-auto bg-gradient-to-br from-purple-600 to-blue-600 text-white"
-                        : "ml-auto bg-gradient-to-br from-purple-500 to-blue-500 text-white"
-                      : theme === "dark"
-                      ? "bg-gray-800 border border-gray-700"
-                      : "bg-white border border-gray-200"
-                  }`}
-                >
-                  {msg.imageUrl && (
-                    <img
-                      src={msg.imageUrl}
-                      alt="shared-img"
-                      className="w-full max-h-60 object-contain rounded-xl mb-2 cursor-pointer hover:scale-105 transition-transform"
-                    />
-                  )}
-                  {msg.videoUrl && (
-                    <video
-                      src={msg.videoUrl}
-                      className="w-full max-h-60 object-contain rounded-xl mb-2 cursor-pointer"
-                      controls
-                    />
-                  )}
-                  {msg.text && (
-                    <p className="break-words whitespace-pre-wrap leading-relaxed">
-                      {msg.text}
-                    </p>
-                  )}
-                  <p className="text-xs text-right opacity-70 mt-2 font-medium">
-                    {moment(msg.createdAt).format("HH:mm")}
-                  </p>
-                </div>
+                key={i}
+                className={`rounded-xl px-4 py-2 w-fit max-w-[320px] mb-2 shadow ${
+                  user._id === msg.msgByUserId
+                    ? theme === "dark"
+                      ? "ml-auto bg-gray-200 text-black"
+                      : "ml-auto bg-purple-600 text-white"
+                    : theme === "dark"
+                    ? "bg-gray-700"
+                    : "bg-purple-100 text-black"
+                }`}
+              >
+                {msg.imageUrl && (
+                  <img
+                    src={msg.imageUrl}
+                    alt="shared-img"
+                    className="w-full max-h-60 object-contain rounded-lg mb-2 cursor-pointer"
+
+                  />
+                )}
+                {msg.videoUrl && (
+                  <video
+                    src={msg.videoUrl}
+                    className="w-full max-h-60 object-contain rounded-lg mb-2 cursor-pointer"
+
+                    controls
+                  />
+                )}
+                <p className="break-words whitespace-pre-wrap">{msg.text}</p>
+              
+                <p className="text-xs text-right opacity-70 mt-1">
+                  {moment(msg.createdAt).format("HH:mm")}
+                </p>
+              </div>
+              
               ))}
             </div>
           ))}
           {loading && (
-            <div className="text-center py-6">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800">
-                <Loading />
-                <span className="text-sm font-medium">Uploading...</span>
-              </div>
+            <div className="text-center py-3">
+              <Loading size={40} />
             </div>
           )}
         </section>
 
+        
         {/* Media Preview */}
-        {(message.imageUrl || message.videoUrl) && (
-          <div className="w-full flex items-center justify-center px-6 py-4">
-            <div className="relative bg-white dark:bg-gray-800 rounded-2xl p-4 max-w-[90vw] sm:max-w-md shadow-2xl border border-gray-200 dark:border-gray-700">
-              <button
-                onClick={
-                  message.imageUrl
-                    ? () => setMessage((prev) => ({ ...prev, imageUrl: "" }))
-                    : () => setMessage((prev) => ({ ...prev, videoUrl: "" }))
-                }
-                className="absolute -top-2 -right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg hover-lift"
-              >
-                <IoClose size={20} />
-              </button>
+{(message.imageUrl || message.videoUrl) && (
+  <div className="w-full h-fit flex items-center justify-center z-[1000] px-4 py-4 overflow-y-auto">
+    <div className="relative bg-white rounded-xl p-4 max-w-[90vw] sm:max-w-md overflow-hidden">
+      <button
+        onClick={
+          message.imageUrl
+            ? () => setMessage((prev) => ({ ...prev, imageUrl: "" }))
+            : () => setMessage((prev) => ({ ...prev, videoUrl: "" }))
+        }
+        className="absolute top-2 right-2 text-red-600"
+      >
+        <IoClose size={24} />
+      </button>
 
-              {message.imageUrl && (
-                <img
-                  src={message.imageUrl}
-                  className="w-full h-auto rounded-xl object-contain"
-                  alt="Preview"
-                />
-              )}
-              {message.videoUrl && (
-                <video
-                  src={message.videoUrl}
-                  className="w-full h-auto rounded-xl object-contain"
-                  controls
-                  autoPlay
-                  muted
-                />
-              )}
-            </div>
-          </div>
-        )}
+      {message.imageUrl && (
+        <img
+          src={message.imageUrl}
+          className="w-full h-auto rounded-lg object-contain"
+          alt="Preview"
+        />
+      )}
+      {message.videoUrl && (
+        <video
+          src={message.videoUrl}
+          className="w-full h-auto rounded-lg object-contain"
+          controls
+          autoPlay
+          muted
+        />
+      )}
+    </div>
+  </div>
+)}
+
 
         {/* Footer */}
-        <footer className={`border-t px-6 py-4 flex items-center gap-4 backdrop-blur-sm ${
-          theme === "dark" 
-            ? "border-gray-700 bg-gray-800/50" 
-            : "border-purple-200 bg-white/50"
-        }`}>
+        <footer className="border-t px-4 py-3 flex items-center gap-3">
           <div className="relative">
             <button
               onClick={() => setOpenImageVideoUpload((prev) => !prev)}
-              className={`p-3 rounded-full transition-all duration-300 hover-lift ${
+              className={`p-2 rounded-full ${
                 theme === "dark"
-                  ? "bg-gray-700 text-white hover:bg-gray-600"
-                  : "bg-purple-100 text-purple-700 hover:bg-purple-200"
-              }`}
+                  ? "bg-gray-700 text-white"
+                  : "bg-purple-100 text-purple-700"
+              } hover:scale-105 transition`}
             >
-              <IoMdAdd size={22} />
+              <IoMdAdd size={20} />
             </button>
             {openImageVideoUpload && (
               <div
-                className={`absolute bottom-16 left-0 rounded-xl shadow-2xl w-40 py-2 border backdrop-blur-sm ${
-                  theme === "dark" 
-                    ? "bg-gray-800/90 border-gray-600" 
-                    : "bg-white/90 border-gray-200"
+                className={`absolute bottom-14 left-0 rounded-lg shadow-md w-36 py-2 ${
+                  theme === "dark" ? "bg-gray-800 outline" : "bg-white outline"
                 }`}
               >
                 <label
                   htmlFor="uploadImage"
-                  className="flex items-center px-4 py-3 hover:bg-purple-100 dark:hover:bg-gray-700 cursor-pointer gap-3 transition-colors"
+                  className="flex items-center px-3 py-2 hover:bg-purple-200 dark:hover:text-black cursor-pointer gap-2"
                 >
                   <FaImage className="text-purple-600" />
-                  <span className="font-medium">Image</span>
+                  <span>Image</span>
                 </label>
-                <hr className="border-gray-200 dark:border-gray-600" />
+                <hr />
                 <label
                   htmlFor="uploadVideo"
-                  className="flex items-center px-4 py-3 hover:bg-purple-100 dark:hover:bg-gray-700 cursor-pointer gap-3 transition-colors"
+                  className="flex items-center px-3 py-2 hover:bg-purple-200 dark:hover:text-black cursor-pointer gap-2"
                 >
                   <FaVideo className="text-purple-600" />
-                  <span className="font-medium">Video</span>
+                  <span>Video</span>
                 </label>
                 <input
                   type="file"
@@ -582,7 +565,7 @@ const MessagePage = () => {
 
           <form
             onSubmit={handleSendMessage}
-            className="flex-1 flex items-center gap-3"
+            className="flex-1 flex items-center gap-2"
           >
             <input
               ref={inputRef}
@@ -591,17 +574,17 @@ const MessagePage = () => {
               onChange={(e) =>
                 setMessage((prev) => ({ ...prev, text: e.target.value }))
               }
-              placeholder="Type your message..."
-              className={`flex-1 px-6 py-3 rounded-full border focus:outline-none transition-all duration-300 input-focus ${
+              placeholder="Type a message..."
+              className={`flex-1 px-4 py-2 rounded-full border focus:outline-none ${
                 theme === "dark"
-                  ? "bg-gray-800 text-white border-gray-600 focus:border-purple-500"
-                  : "bg-white border-gray-300 focus:border-purple-500"
+                  ? "bg-gray-700 text-white border-gray-600"
+                  : "bg-white border-purple-300"
               }`}
             />
 
             <button
               type="submit"
-              className="p-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full hover:from-purple-700 hover:to-blue-700 transition-all duration-300 shadow-lg hover-lift"
+              className="p-2 bg-purple-600 text-white rounded-full hover:bg-purple-700"
             >
               <MdSend size={22} />
             </button>

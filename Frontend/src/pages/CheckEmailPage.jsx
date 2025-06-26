@@ -31,32 +31,27 @@ const CheckEmailPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 p-6">
-      <div className="bg-white/90 backdrop-blur-xl max-w-md w-full rounded-3xl shadow-2xl p-8 border border-purple-200 text-black glass-effect">
-        <div className="text-center mb-8">
-          <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
-            <LuCircleUserRound size={40} className="text-white" />
-          </div>
-
-          <h3 className="text-3xl font-extrabold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
-            Welcome to BaatCheet!
-          </h3>
-          <p className="text-gray-600 text-lg">
-            Connect, collaborate, and chat with developers
-          </p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-indigo-100 via-purple-100 to-pink-100 p-6">
+      <div className="bg-white/90 backdrop-blur-md max-w-md w-full rounded-3xl shadow-xl p-8 border border-purple-200 text-black">
+        <div className="w-fit mx-auto mb-6 text-purple-700">
+          <LuCircleUserRound size={80} />
         </div>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="email" className="block font-bold text-purple-700 mb-2">
-              Email Address
+        <h3 className="text-3xl font-extrabold text-center text-purple-700 mb-8">
+          We are glad you are here for BaatCheet!!
+        </h3>
+
+        <form className="grid gap-5" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="email" className="font-semibold text-purple-600">
+              Email
             </label>
             <input
               type="email"
               id="email"
               name="email"
               placeholder="Enter your email"
-              className="w-full bg-purple-50 px-4 py-4 rounded-xl border border-purple-300 focus:border-purple-500 focus:ring-4 focus:ring-purple-200 transition-all duration-300 input-focus text-gray-900"
+              className="bg-purple-50 px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
               value={data.email}
               onChange={handleOnChange}
               required
@@ -65,23 +60,21 @@ const CheckEmailPage = () => {
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg font-bold rounded-xl py-4 transition-all duration-300 shadow-lg hover-lift btn-primary"
+            className="bg-purple-600 hover:bg-purple-700 text-white text-lg font-semibold rounded-lg py-3 transition"
           >
-            Continue
+            Let's Go
           </button>
         </form>
 
-        <div className="text-center mt-8">
-          <p className="text-gray-600">
-            New to BaatCheet?{" "}
-            <Link
-              to="/register"
-              className="font-bold text-purple-600 hover:text-purple-800 underline transition-colors"
-            >
-              Create Account
-            </Link>
-          </p>
-        </div>
+        <p className="text-center mt-6 text-purple-700">
+          New User?{" "}
+          <Link
+            to="/register"
+            className="font-semibold underline hover:text-purple-900"
+          >
+            Register
+          </Link>
+        </p>
       </div>
     </div>
   );

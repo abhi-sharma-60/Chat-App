@@ -28,7 +28,7 @@ const Sidebar = (refreshKey) => {
 
   useEffect(() => {
     if (socketConnection && user?._id) {
-      socketConnection.emit("sidebar", user?._id);
+      socketConnection.emit("sidebar", user?._id); // ✅ fixed typo
 
       socketConnection.on("conversation", (data) => {
         const formattedUsers = data.map((conversationUser) => {
@@ -46,13 +46,15 @@ const Sidebar = (refreshKey) => {
           };
         });
         setAllUser(formattedUsers);
+        console.log("alluser")
+        console.log(formattedUsers)
       });
 
       return () => {
         socketConnection.off("conversation");
       };
     }
-  }, [socketConnection, user?._id, refreshKey]);
+  }, [socketConnection, user?._id,refreshKey]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -62,188 +64,163 @@ const Sidebar = (refreshKey) => {
 
   return (
     <div
-      className={`w-full h-full grid grid-cols-[64px,1fr] overflow-hidden shadow-2xl ${
-        theme === "dark" 
-          ? "bg-gradient-to-b from-gray-900 to-gray-800 text-white" 
-          : "bg-gradient-to-b from-white to-gray-50"
+      className={`w-full h-full grid grid-cols-[48px,1fr] overflow-hidden   dark:shadow-white  shadow ${
+        theme === "dark" ? "bg-gray-900 text-white" : "bg-white"
       }`}
     >
       {/* Left Icon Bar */}
       <div
         className={`${
-          theme === "dark" 
-            ? "bg-gradient-to-b from-gray-800 to-gray-900 border-r border-gray-700" 
-            : "bg-gradient-to-b from-gray-100 to-gray-200 border-r border-gray-300"
-        } w-16 h-full py-6 flex flex-col justify-between items-center shadow-lg`}
+          theme === "dark" ? "bg-gray-800" : "bg-slate-100"
+        } w-12 h-full rounded-tr-lg rounded-br-lg py-5 flex flex-col justify-between`}
       >
-        <div className="flex flex-col items-center space-y-4">
+        <div>
           <NavLink
             to="/"
             className={({ isActive }) =>
-              `w-12 h-12 flex justify-center items-center cursor-pointer rounded-xl transition-all duration-300 hover-lift ${
-                theme === "dark" 
-                  ? "hover:bg-gray-700 hover:shadow-lg" 
-                  : "hover:bg-white hover:shadow-md"
-              } ${
-                isActive 
-                  ? theme === "dark" 
-                    ? "bg-gradient-to-br from-purple-600 to-blue-600 text-white shadow-lg" 
-                    : "bg-gradient-to-br from-purple-500 to-blue-500 text-white shadow-lg"
-                  : ""
+              `w-12 h-12 flex justify-center items-center cursor-pointer ${
+                theme === "dark" ? "hover:bg-gray-700" : "hover:bg-slate-300"
+              } rounded ${
+                isActive && (theme === "dark" ? "bg-gray-700" : "bg-slate-200")
               }`
             }
             title="Chat"
           >
-            <IoChatbubbleEllipsesSharp size={22} />
+            <IoChatbubbleEllipsesSharp size={20} />
           </NavLink>
 
           <div
-            className={`w-12 h-12 flex justify-center items-center cursor-pointer rounded-xl transition-all duration-300 hover-lift ${
-              theme === "dark" 
-                ? "hover:bg-gray-700 hover:shadow-lg" 
-                : "hover:bg-white hover:shadow-md"
-            }`}
+            className={`w-12 h-12 flex justify-center items-center cursor-pointer mt-3 ${
+              theme === "dark" ? "hover:bg-gray-700" : "hover:bg-slate-300"
+            } rounded`}
             title="Add friend"
             onClick={() => setOpenSearchUser(true)}
           >
             <FaUserPlus size={20} />
           </div>
 
-          <NavLink
+
+            {/**skills */}
+            <NavLink
             to="/skills"
             className={({ isActive }) =>
-              `w-12 h-12 flex justify-center items-center cursor-pointer rounded-xl transition-all duration-300 hover-lift ${
-                theme === "dark" 
-                  ? "hover:bg-gray-700 hover:shadow-lg" 
-                  : "hover:bg-white hover:shadow-md"
-              } ${
-                isActive 
-                  ? theme === "dark" 
-                    ? "bg-gradient-to-br from-purple-600 to-blue-600 text-white shadow-lg" 
-                    : "bg-gradient-to-br from-purple-500 to-blue-500 text-white shadow-lg"
-                  : ""
+              `w-12 h-12 flex justify-center items-center cursor-pointer ${
+                theme === "dark" ? "hover:bg-gray-700" : "hover:bg-slate-300"
+              } rounded ${
+                isActive && (theme === "dark" ? "bg-gray-700" : "bg-slate-200")
               }`
             }
             title="Skills"
           >
             <SlSettings size={20} />
           </NavLink>
+
+
         </div>
 
         {/* Bottom actions */}
-        <div className="flex flex-col items-center space-y-4">
+        <div className="flex flex-col justify-center items-center gap-2">
           <ThemeToggle />
           <button
-            className="hover-lift rounded-full"
+            className="mt-3 mb-2"
             title={user?.name}
             onClick={() => setEditUserOpen(true)}
           >
             <Avatar
-              width={44}
-              height={44}
+              width={40}
+              height={40}
               name={user?.name}
               imageUrl={user?.profile_pic}
               userId={user?._id}
+              className="mt-2"
             />
           </button>
           <button
             title="Logout"
-            className={`w-12 h-12 flex justify-center items-center cursor-pointer rounded-xl transition-all duration-300 hover-lift ${
-              theme === "dark" 
-                ? "hover:bg-red-600 hover:text-white" 
-                : "hover:bg-red-500 hover:text-white"
-            }`}
+            className={`w-12 h-12 flex justify-center items-center cursor-pointer ${
+              theme === "dark" ? "hover:bg-gray-700" : "hover:bg-slate-300"
+            } rounded`}
             onClick={handleLogout}
           >
-            <BiLogOut size={22} />
+            <BiLogOut size={20} />
           </button>
         </div>
       </div>
 
       {/* User List */}
-      <div className="w-full flex flex-col">
-        <div className="h-20 flex justify-center items-center border-b border-gray-200 dark:border-gray-700">
+      <div className="w-full">
+        <div className="h-16 flex justify-center items-center">
           <h2
-            className={`text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent`}
+            className={`text-xl font-bold p-4 h-16 ${
+              theme === "dark" ? "text-white" : "text-slate-800"
+            }`}
           >
             Messages
           </h2>
         </div>
 
-        <div className="flex-1 overflow-y-auto srollbar p-2">
+        <Divider />
+
+        <div className="h-[calc(100vh-65px)] overflow-y-auto scrollbar">
           {allUser.length === 0 ? (
-            <div className="mt-16 text-center">
-              <div className="flex justify-center items-center mb-6 text-gray-400">
-                <div className="p-4 rounded-full bg-gray-100 dark:bg-gray-800">
-                  <GoArrowUpLeft size={40} />
-                </div>
+            <div className="mt-12 text-center text-slate-400">
+              <div className="flex justify-center items-center mb-4 text-slate-500">
+                <GoArrowUpLeft size={50} />
               </div>
-              <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">
-                Start exploring users
-              </p>
-              <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
-                Find people to chat with
-              </p>
+              <p>Explore users to start a conversation with.</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {allUser.map((conv) => (
-                <NavLink
-                  to={"/" + conv?.userDetails?._id}
-                  key={conv?._id}
-                  className={({ isActive }) =>
-                    `flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all duration-300 hover-lift card-hover ${
-                      theme === "dark" 
-                        ? isActive 
-                          ? "bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30" 
-                          : "hover:bg-gray-800/50"
-                        : isActive 
-                          ? "bg-gradient-to-r from-purple-100 to-blue-100 border border-purple-200" 
-                          : "hover:bg-gray-50"
-                    }`
-                  }
-                >
-                  <Avatar
-                    imageUrl={conv?.userDetails?.profile_pic}
-                    name={conv?.userDetails?.name}
-                    width={56}
-                    height={56}
-                    userId={conv?.userDetails?._id}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold capitalize truncate mb-1">
-                      {conv?.userDetails?.name}
-                    </h3>
-                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                      <div className="flex items-center gap-1">
-                        {conv?.lastMsg?.imageUrl && (
-                          <div className="flex items-center gap-1 text-blue-500">
-                            <FaImage size={12} />
-                            {!conv?.lastMsg?.text && <span>Image</span>}
-                          </div>
-                        )}
-                        {conv?.lastMsg?.videoUrl && (
-                          <div className="flex items-center gap-1 text-purple-500">
-                            <FaVideo size={12} />
-                            {!conv?.lastMsg?.text && <span>Video</span>}
-                          </div>
-                        )}
-                      </div>
-                      <p className="truncate max-w-[140px] font-medium">
-                        {conv?.lastMsg?.text}
-                      </p>
+            allUser.map((conv) => (
+              <NavLink
+                to={"/" + conv?.userDetails?._id}
+                key={conv?._id}
+                className={`flex items-center gap-3  ${
+                  theme === "dark" ? "hover:bg-gray-800" : "hover:bg-slate-100"
+                } p-2 m-1 rounded-md cursor-pointer`}
+              >
+                <Avatar
+                  imageUrl={conv?.userDetails?.profile_pic}
+                  name={conv?.userDetails?.name}
+                  width={55}
+                  height={55}
+                />
+                <div>
+                  <h3 className="text-ellipsis line-clamp-1 font-semibold capitalize">
+                    {conv?.userDetails?.name}
+                  </h3>
+                  <div className="text-xs text-slate-500 flex items-center gap-1">
+                    <div>
+                      {conv?.lastMsg?.imageUrl && (
+                        <div className="flex items-center gap-2">
+                          <span>
+                            <FaImage />
+                          </span>
+                          {!conv?.lastMsg?.text && <span>Image</span>}
+                        </div>
+                      )}
+                      {conv?.lastMsg?.videoUrl && (
+                        <div className="flex items-center gap-2">
+                          <span>
+                            <FaVideo />
+                          </span>
+                          {!conv?.lastMsg?.text && <span>Video</span>}
+                        </div>
+                      )}
                     </div>
+                    <p className="truncate break-all max-w-[110px]">
+  {conv?.lastMsg?.text}
+</p>
+
+
                   </div>
-                  {conv?.unseenMsg > 0 && 
-                   (conv?.userDetails?._id !== currentChatUserId) && 
-                   (conv?.lastMsg?.seen !== true) && (
-                    <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full shadow-lg pulse-online">
-                      {conv?.unseenMsg > 99 ? "99+" : conv.unseenMsg}
-                    </div>
-                  )}
-                </NavLink>
-              ))}
-            </div>
+                </div>
+                {conv?.unseenMsg > 0 && (conv?.userDetails?._id!==currentChatUserId) && (conv?.lastMsg?.seen!=true) && (
+                  <span className="w-7 h-7 text-xs flex justify-center items-center ml-auto bg-primary text-white font-semibold rounded-full">
+                    {conv?.unseenMsg > 99 ? "99+" : conv.unseenMsg}
+                  </span>
+                )}
+              </NavLink>
+            ))
           )}
         </div>
       </div>

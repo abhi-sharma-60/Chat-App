@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { IoClose } from "react-icons/io5";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { LuCircleUserRound } from "react-icons/lu";
 import Avatar from "../components/Avatar";
 import { useDispatch } from "react-redux";
 import { setToken } from "../redux/userSlice";
@@ -61,40 +63,39 @@ const CheckPasswordPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 p-6">
-      <div className="bg-white/90 backdrop-blur-xl max-w-md w-full rounded-3xl shadow-2xl p-8 border border-purple-200 text-black glass-effect">
-        <div className="text-center mb-8">
-          <div className="relative inline-block mb-4">
-            <Avatar
-              width={100}
-              height={100}
-              name={location?.state?.name}
-              imageUrl={location?.state?.profile_pic}
-            />
-            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 border-4 border-white rounded-full flex items-center justify-center">
-              <span className="text-white text-xs">✓</span>
-            </div>
-          </div>
-          
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Welcome back, {location?.state?.name?.split(" ")[0]}!
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-indigo-100 via-purple-100 to-pink-100 p-6">
+      <div className="bg-white/90 backdrop-blur-md max-w-md w-full rounded-3xl shadow-xl p-8 border border-purple-200 text-black">
+        <div className="w-fit mx-auto mb-4 flex justify-center items-center flex-col">
+          <Avatar
+            width={80}
+            height={80}
+            name={location?.state?.name}
+            imageUrl={location?.state?.profile_pic}
+          />
+          <h2 className="font-semibold text-lg mt-2 text-purple-700">
+            {location?.state?.name}
           </h2>
-          <p className="text-gray-600">
-            Enter your password to continue
-          </p>
         </div>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="password" className="block font-bold text-purple-700 mb-2">
+        <h3 className="text-center underline text-xl text-purple-700 mb-6">
+          We are glad you are here for BaatCheet !!
+        </h3>
+
+        <form className="grid gap-5" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-1">
+            <label htmlFor="password" className="font-semibold text-purple-600">
               Password
             </label>
             <input
               type="password"
               id="password"
               name="password"
-              placeholder="Enter your password"
-              className="w-full bg-purple-50 px-4 py-4 rounded-xl border border-purple-300 focus:border-purple-500 focus:ring-4 focus:ring-purple-200 transition-all duration-300 input-focus text-gray-900"
+              placeholder={`${
+                location?.state?.name
+                  ? `${location.state.name.split(" ")[0]}, enter your password`
+                  : "Enter your password"
+              }`}
+              className="bg-purple-50 px-4 py-3 rounded-lg border border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-300 transition"
               value={data.password}
               onChange={handleOnchange}
               required
@@ -103,20 +104,20 @@ const CheckPasswordPage = () => {
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white text-lg font-bold rounded-xl py-4 transition-all duration-300 shadow-lg hover-lift btn-primary"
+            className="bg-purple-600 hover:bg-purple-700 text-white text-lg font-semibold rounded-lg py-3 transition"
           >
-            Sign In
+            Login
           </button>
         </form>
 
-        <div className="text-center mt-8">
+        <p className="text-center mt-6 text-purple-700">
           <Link
             to="/forgot"
-            className="font-bold text-purple-600 hover:text-purple-800 underline transition-colors"
+            className="font-semibold underline hover:text-purple-900"
           >
             Forgot Password?
           </Link>
-        </div>
+        </p>
       </div>
     </div>
   );
